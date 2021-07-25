@@ -244,14 +244,18 @@ namespace AppleSerialization
             string? typeStr = reader.GetString();
             Type? valueType = Type.GetType(typeStr!);
 
-            if (typeStr is null)
-            {
-                Debug.WriteLine($"Can't find type of name {typeStr!}! GetTypeFromObject (private) returning null.");
+            if (valueType is not null) return valueType;
 
-                return null;
+            if (Environment.ExternalTypes.TryGetValue(typeStr, out valueType))
+            {
+                return valueType;
             }
 
-            return valueType;
+            Debug.WriteLine(
+                $"Can't find type of name {typeStr ?? "null"}! GetTypeFromObject (private) returning null." +
+                "Ensure that the type exists in Environment.ExternalTypes and that the type name is correct.");
+
+            return null;
         }
 
         /// <summary>

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
@@ -30,7 +32,13 @@ namespace AppleSerialization
         /// and not intended to be manipulated by users or other parts of the program
         /// </summary>
         // This is a very hacky and stupid solution and there may or may not be a better solution, but it works.
-        public static Vector2? CurrentDeserializingObjectSize { get; set; } 
+        public static Vector2? CurrentDeserializingObjectSize { get; set; }
+
+        /// <summary>
+        /// A <see cref="Dictionary{TKey,TValue}"/> contains any external types that will be involved in serialization.
+        /// The key is the name of the type in string form.
+        /// </summary>
+        public static Dictionary<string, Type> ExternalTypes { get; } = new();
         
         /// <summary>
         /// Default <see cref="JsonSerializerOptions"/> instance for use in any serialization methods that accepts such
@@ -41,6 +49,8 @@ namespace AppleSerialization
             AllowTrailingCommas = true,
             ReadCommentHandling = JsonCommentHandling.Skip
         };
+
+        public static readonly JsonWriterOptions DefaultWriterOptions = new() {Indented = true};
 #nullable enable
     }
 }
