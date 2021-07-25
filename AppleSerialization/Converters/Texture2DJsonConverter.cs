@@ -30,7 +30,7 @@ namespace AppleSerialization.Converters
             //First, try to parse a color value. If there is no color value, then get a Texture2D by name via the global
             //content manager
 
-            Vector2? currentObjSize = GlobalVars.CurrentDeserializingObjectSize;
+            Vector2? currentObjSize = Environment.CurrentDeserializingObjectSize;
             var (width, height) = ((int) (currentObjSize?.X ?? 1), (int) (currentObjSize?.Y ?? 1));
 
             if (currentObjSize is null)
@@ -43,7 +43,7 @@ namespace AppleSerialization.Converters
             if (value is null)
             {
                 Debug.WriteLine("Unable to get the string value when getting Texture2D. Using default texture");
-                return TextureHelper.GenerateDefaultTexture(GlobalVars.GraphicsDevice, width, height);
+                return TextureHelper.GenerateDefaultTexture(Environment.GraphicsDevice, width, height);
             }
 
             Color? textureColor = TextureHelper.GetColorFromName(value.ToLower());
@@ -53,12 +53,12 @@ namespace AppleSerialization.Converters
                 Color paramColor = textureColor.Value;
 
                 //TextureFromColor is not case-sensitive, so we don't need to do anything extra to the string value
-                return TextureHelper.CreateTextureFromColor(GlobalVars.GraphicsDevice, in paramColor, width, height);
+                return TextureHelper.CreateTextureFromColor(Environment.GraphicsDevice, in paramColor, width, height);
             }
 
             //the string value is not a color, so intercept it as a name to a Texture2D existing within the content
             //manager
-            Texture2D? outTexture = GlobalVars.GlobalContentManager.Load<Texture2D>(value);
+            Texture2D? outTexture = Environment.ContentManager.Load<Texture2D>(value);
 
             if (outTexture is not null)
             {
@@ -66,7 +66,7 @@ namespace AppleSerialization.Converters
             }
 
             Debug.WriteLine($"Texture of name {value} was not found. Using default texture.");
-            return TextureHelper.GenerateDefaultTexture(GlobalVars.GraphicsDevice, width, height);
+            return TextureHelper.GenerateDefaultTexture(Environment.GraphicsDevice, width, height);
             
         }
 

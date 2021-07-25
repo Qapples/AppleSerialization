@@ -5,30 +5,24 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace AppleSerialization
 {
-    public static class GlobalVars
+    public static class Environment
     {
-        //Neither of these variables are going to be null after initialization in the game method
 #nullable disable
 
         /// <summary>
-        /// Content path were all assets are stored. Can be changed though program parameters.
-        /// </summary>
-        public static string ContentPath { get; set; }
-
-        /// <summary>
-        /// When an invalid SpriteFont is invalid, this sprite font will be used instead
+        /// When a <see cref="FontSystem"/> is invalid, this one will be used instead in it's place.
         /// </summary>
         public static FontSystem DefaultFontSystem { get; set; }
 
         /// <summary>
-        /// Main graphics device used for rendering
+        /// <see cref="GraphicsDevice"/> instance used for creating instances of <see cref="Texture2D"/> and more.
         /// </summary>
         public static GraphicsDevice GraphicsDevice { get; set; }
 
         /// <summary>
-        /// ContentManager that can be used globally so that content can be loaded regardless of location
+        /// <see cref="RawContentManager"/> instance used for loading assets.
         /// </summary>
-        public static RawContentManager GlobalContentManager { get; set; }
+        public static RawContentManager ContentManager { get; set; }
 
         /// <summary>
         /// Represents the size of the object currently being deserialized. Used for generating Texture2D when a size
@@ -47,12 +41,6 @@ namespace AppleSerialization
             AllowTrailingCommas = true,
             ReadCommentHandling = JsonCommentHandling.Skip
         };
-
-        /// <summary>
-        /// Default <see cref="JsonWriterOptions"/> instance that is for use in any serialization methods that accepts
-        /// such a parameter.
-        /// </summary>
-        public static readonly JsonWriterOptions DefaultWriterOptions = new() {Indented = true};
 #nullable enable
     }
 }

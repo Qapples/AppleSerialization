@@ -36,8 +36,8 @@ namespace AppleSerialization.Converters
                         (string?) ConverterHelper.GetValueFromReader(ref reader, typeof(string), options);
                     FontSystem? outSystem =
                         fontName is not null
-                            ? GlobalVars.GlobalContentManager.LoadFactory(new[] {fontName},
-                                FontSystemFactory.Create(GlobalVars.GraphicsDevice), fontName)
+                            ? Environment.ContentManager.LoadFactory(new[] {fontName},
+                                FontSystemFactory.Create(Environment.GraphicsDevice), fontName)
                             : null;
 
                     //a little bit difficult to read here but all we are doing is that we are accounting for the
@@ -51,14 +51,14 @@ namespace AppleSerialization.Converters
 
                     Debug.WriteLine($"Unable to parse array of fonts. Returning GlobalVars.DefaultFontSystem." +
                                     $"(FontSystemJsonConverter)");
-                    return GlobalVars.DefaultFontSystem;
+                    return Environment.DefaultFontSystem;
                 }
 
                 if (objPaths[0] is not string)
                 {
                     Debug.WriteLine($"The first element of the directory array is not a string indicating the" +
                                     $"name. Returning GlobalVars.DefaultFontSystem (FontSystemJsonConverter)");
-                    return GlobalVars.DefaultFontSystem;
+                    return Environment.DefaultFontSystem;
                 }
 
                 //the first element of objPaths describes the NAME of the generated FontSystem
@@ -69,13 +69,13 @@ namespace AppleSerialization.Converters
                 }
 
                 string name = (string) objPaths[0]!;
-                FontSystem? output = GlobalVars.GlobalContentManager.LoadFactory(paths.ToArray(),
-                    FontSystemFactory.Create(GlobalVars.GraphicsDevice), name);
+                FontSystem? output = Environment.ContentManager.LoadFactory(paths.ToArray(),
+                    FontSystemFactory.Create(Environment.GraphicsDevice), name);
                 if (output is null)
                 {
                     Debug.WriteLine($"Error generating FontSystem of name {name}. Returning " +
                                     $"GlobalVars.DefaultFontSystem (FontSystemJsonConverter)");
-                    return GlobalVars.DefaultFontSystem;
+                    return Environment.DefaultFontSystem;
                 }
 
                 return output!;
@@ -84,7 +84,7 @@ namespace AppleSerialization.Converters
             {
                 Debug.WriteLine($"Unexpected exception in Read of FontSystemJsonConverter. Returning " +
                                 $"GlobalVars.DefaultFontSystem. Exception: {e}");
-                return GlobalVars.DefaultFontSystem;
+                return Environment.DefaultFontSystem;
             }
         }
 

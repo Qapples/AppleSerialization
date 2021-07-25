@@ -26,16 +26,6 @@ namespace AppleSerialization
         private GraphicsDevice _graphicsDevice;
 
         /// <summary>
-        /// Constructs a RawContentManager from just a GraphicsDevice instance. The Directory property will be defaulted
-        /// to <see cref="GlobalVars.ContentPath"/>.
-        /// </summary>
-        /// <param name="graphicsDevice">GraphicsDevice instance used to load in specific graphic related assets like
-        /// textures, etc. </param>
-        public RawContentManager(GraphicsDevice graphicsDevice) : this(graphicsDevice, GlobalVars.ContentPath)
-        {
-        }
-
-        /// <summary>
         /// Constructs a RawContentManager from a GraphicsDevice instance and a directory representing the location
         /// where assets will be loaded from
         /// </summary>
