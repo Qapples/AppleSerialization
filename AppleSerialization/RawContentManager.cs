@@ -21,7 +21,7 @@ namespace AppleSerialization
         /// </summary>
         public string Directory { get; set; }
 
-        private readonly Dictionary<string, object> _loadedAssets = new (StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, object> _loadedAssets = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<IDisposable?> _disposables = new();
         private GraphicsDevice _graphicsDevice;
 
@@ -177,7 +177,7 @@ namespace AppleSerialization
                     {
                         try
                         {
-                           fontSystem.AddFont(File.ReadAllBytes(Path.Combine(Directory, path))); 
+                            fontSystem.AddFont(File.ReadAllBytes(Path.Combine(Directory, path)));
                         }
                         catch (Exception e)
                         {
@@ -195,6 +195,19 @@ namespace AppleSerialization
                         $"{typeof(T)} is not supported by the Load method and cannot be loaded. Returning null");
                     return null;
             }
+        }
+
+        /// <summary>
+        /// Adds an internally stored piece of data to this <see cref="RawContentManager"/>.
+        /// </summary>
+        /// <param name="data">The data itself. Must implement <see cref="IDisposable"/> inorder to be added.</param>
+        /// <param name="name">Optional name of the data. If null/not set to, then the name will be given a numerical
+        /// identifier instead.</param>
+        /// <typeparam name="T">The type of the data.</typeparam>
+        public void Add<T>(in T data, string? name = null) where T : IDisposable
+        {
+            _loadedAssets.Add(name ?? _loadedAssets.Count.ToString(), data);
+            _disposables.Add(data);
         }
 
         /// <summary>

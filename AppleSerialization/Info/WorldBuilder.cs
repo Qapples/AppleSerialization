@@ -84,6 +84,8 @@ namespace AppleSerialization.Info
         public World CreateWorld(int maxCapacity)
         {
             World outputWorld = new(maxCapacity);
+            
+            //Set entities.
             MethodInfo setMethod =
                 typeof(Entity).GetMethods().First(e => e.Name == "Set" && e.GetParameters().Length > 0);
 
@@ -97,6 +99,8 @@ namespace AppleSerialization.Info
 
                     setMethod.MakeGenericMethod(componentType).Invoke(entity, new[] {component});
                 }
+                
+                entity.Set(info.Id);
             }
 
             return outputWorld;
