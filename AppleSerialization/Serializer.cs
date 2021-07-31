@@ -35,10 +35,10 @@ namespace AppleSerialization
             if (Environment.DefaultFontSystem is null || Environment.GraphicsDevice is null ||
                 Environment.ContentManager is null)
             {
-                Debug.WriteLine("One or more of the enviornment variables are null." +
-                                $"DefaultFontSystem: {(Environment.DefaultFontSystem is null ? "null" : "not null")}" +
-                                $"GraphicsDevice: {(Environment.GraphicsDevice is null ? "null" : "not null")}" +
-                                $"ContentManager: {(Environment.ContentManager is null ? "null" : "not null")}");
+                Debug.WriteLine("One or more of the enviornment variables are null: " +
+                                $"\nDefaultFontSystem: {(Environment.DefaultFontSystem is null ? "null" : "not null")} " +
+                                $"\nGraphicsDevice: {(Environment.GraphicsDevice is null ? "null" : "not null")} " +
+                                $"\nContentManager: {(Environment.ContentManager is null ? "null" : "not null")}");
 
                 //stupid null returning hack
                 object? a = null;
