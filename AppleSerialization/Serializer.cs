@@ -75,7 +75,6 @@ namespace AppleSerialization
                 if (reader.TokenType != JsonTokenType.PropertyName) continue;
 
                 string propertyName = reader.GetString()!; //PropertyNames will always be a string
-                Debug.WriteLine(propertyName);
                 if (!reader.Read()) break; //skip to next node
 
                 int parameterIndex = parameterInIndexMap[propertyName];
@@ -93,7 +92,7 @@ namespace AppleSerialization
                     string lowerPropertyName = propertyName.ToLower();
                     object? parameterValue = ConverterHelper.GetValueFromReader(ref reader,
                         jsonParameters[parameterIndex].ParameterType, options);
-                    
+
                     if (lowerPropertyName is "size" or "scale" && parameterValue is not null)
                     {
                         Environment.CurrentDeserializingObjectSize = (Vector2) parameterValue;
