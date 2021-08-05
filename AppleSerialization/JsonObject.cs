@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -107,13 +108,18 @@ namespace AppleSerialization
                     string lowerPropertyName = propertyName.ToLower();
 
                     object? parameterValue = null;
+                    JsonValueKind valueKind = JsonValueKind.Null;
                     switch (reader.TokenType)
                     {
                         // ReSharper disable MultipleStatementsOnOneLine
-                        case JsonTokenType.True: parameterValue = true; break;
-                        case JsonTokenType.False: parameterValue = false; break;
-                        case JsonTokenType.String: parameterValue = reader.GetString(); break;
-                        case JsonTokenType.Number: parameterValue = GetNumber(ref reader); break;
+                        case JsonTokenType.True: 
+                            parameterValue = true; valueKind = JsonValueKind.True; break;
+                        case JsonTokenType.False: 
+                            parameterValue = false; valueKind = JsonValueKind.False; break;
+                        case JsonTokenType.String: 
+                            parameterValue = reader.GetString(); valueKind = JsonValueKind.String; break;
+                        case JsonTokenType.Number:
+                            parameterValue = GetNumber(ref reader); valueKind = JsonValueKind.Number; break;
                         // ReSharper enable MultipleStatementsOnOneLine
                     }
 
@@ -122,13 +128,13 @@ namespace AppleSerialization
                         Environment.CurrentDeserializingObjectSize = (Vector2) parameterValue;
                     }
         
-                    rootObject.Elements.Add(new JsonProperty(propertyName, parameterValue));
+                    rootObject.Elements.Add(new JsonProperty(propertyName, parameterValue, valueKind));
                 }
             }
         
             return rootObject;
         }
-        
+
         private static JsonArray? GetObjectArray(ref Utf8JsonReader reader, string name)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
@@ -200,7 +206,7 @@ namespace AppleSerialization
     /// </summary>
     /// <param name="Name">The name of the property.</param>
     /// <param name="Value">The value of the property.</param>
-    public sealed record JsonProperty(string Name, object? Value);
+    public sealed record JsonProperty(string Name, object? Value, JsonValueKind ValueKind);
 
     /// <summary>
     /// Represents an array of <see cref="JsonObject"/> instances.
