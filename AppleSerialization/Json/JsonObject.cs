@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
 
-namespace AppleSerialization
+namespace AppleSerialization.Json
 {
     /// <summary>
     /// Represents a collection of <see cref="JsonProperty"/> instance that describe each individual property and value
@@ -310,11 +307,4 @@ namespace AppleSerialization
     /// <param name="Name">The name of the property.</param>
     /// <param name="Value">The value of the property.</param>
     public sealed record JsonProperty(string Name, object? Value, JsonValueKind ValueKind);
-
-    /// <summary>
-    /// Represents an array of <see cref="JsonObject"/> instances.
-    /// </summary>
-    /// <param name="Name">Name/Identifier of the array.</param>
-    /// <param name="Objects">The <see cref="JsonObject"/> instances in the array.</param>
-    public sealed record JsonArray(string Name, IList<JsonObject> Objects);
 }
