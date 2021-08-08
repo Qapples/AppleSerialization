@@ -300,11 +300,4 @@ namespace AppleSerialization.Json
 
         private delegate object? TryGetDelegate(ref Utf8JsonReader reader);
     }
-
-    /// <summary>
-    /// Represents the data of a json property.
-    /// </summary>
-    /// <param name="Name">The name of the property.</param>
-    /// <param name="Value">The value of the property.</param>
-    public sealed record JsonProperty(string Name, object? Value, JsonValueKind ValueKind);
 }
