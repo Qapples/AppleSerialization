@@ -153,7 +153,7 @@ namespace AppleSerialization.Json
         /// </summary>
         /// <param name="options">Optional <see cref="JsonWriterOptions"/> instance that determines how the string is
         /// generated.</param>
-        /// <returns>A string value that represents this <see cref="JsonObject"/> and it's chilern, properties, and
+        /// <returns>A string value that represents this <see cref="JsonObject"/> and it's children, properties, and
         /// arrays in json format.</returns>
         public string GenerateJsonText(in JsonWriterOptions? options = null)
         {
@@ -164,6 +164,33 @@ namespace AppleSerialization.Json
             writer.Flush();
 
             return Encoding.UTF8.GetString(ms.ToArray());
+        }
+
+        /// <summary>
+        /// Attempts to write the contents of this <see cref="JsonObject"/> instance to a file path.
+        /// </summary>
+        /// <param name="filePath">The path of the file to write to.</param>
+        /// <param name="options">Optional <see cref="JsonWriterOptions"/> instance that determines how the file is
+        /// written to. If null, then <see cref="DefaultWriterOptions"/> is used.</param>
+        /// <returns>If writing to the file was successful, then true is returned. Otherwise, false is returned and a
+        /// message is written to the debugger explaining what went wrong.</returns>
+        public bool TryWriteToFile(string filePath, in JsonWriterOptions? options = null)
+        {
+            try
+            {
+                using FileStream stream = File.OpenWrite(filePath);
+
+                Utf8JsonWriter writer = new(stream, options ?? DefaultWriterOptions);
+                WriteToJson(writer);
+                writer.Flush();
+
+                return true;
+            }
+            catch (Exception e)
+            { 
+                Debug.WriteLine($"{nameof(TryWriteToFile)} failed with exception: {e}.");
+                return false;
+            }
         }
 
         private void WriteToJson(Utf8JsonWriter writer)
