@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using DefaultEcs;
 using Microsoft.Xna.Framework;
 
 namespace AppleSerialization.Json
@@ -46,11 +47,17 @@ namespace AppleSerialization.Json
         /// <param name="arrays"><see cref="JsonArray"/> instance that represent any and all arrays the object will
         /// have. If null, a new <see cref="List{T}"/> will be created.</param>
         /// <param name="name">If available, this represents the name of the object. Not every object will and can have
-        /// a name (i.e. elements in an array)</param>
+        /// a name (i.e. elements in an array). If this value is not set to, then a name or identifier will attempt to
+        /// be found by finding a value in <see cref="Properties"/> whose name is "id" or "name". If not found, then
+        /// <see cref="Name"/> will be null.</param>
         public JsonObject(IList<JsonProperty>? properties = null, IList<JsonObject>? children = null,
-            IList<JsonArray>? arrays = null, string? name = null) => (Properties, Children, Arrays, Name) =
-            (properties ?? new List<JsonProperty>(), children ?? new List<JsonObject>(),
-                arrays ?? new List<JsonArray>(), name);
+            IList<JsonArray>? arrays = null, string? name = null)
+        {
+            FindName(name);
+            
+            (Properties, Children, Arrays) = (properties ?? new List<JsonProperty>(),
+                children ?? new List<JsonObject>(), arrays ?? new List<JsonArray>());
+        }
 
         /// <summary>
         /// Constructs a new <see cref="JsonObject"/> instance based on the data received from a
@@ -60,14 +67,20 @@ namespace AppleSerialization.Json
         /// a new <see cref="JsonObject"/> instance. In most cases, the <see cref="Utf8JsonReader"/> is reciving
         /// data from a file.</param>
         /// <param name="name">If available, this represents the name of the object. Not every object will and can have
-        /// a name (i.e. elements in an array)</param>
+        /// a name (i.e. elements in an array). If this value is not set to, then a name or identifier will attempt to
+        /// be found by finding a value in <see cref="Properties"/> whose name is "id" or "name". If not found, then
+        /// <see cref="Name"/> will be null.</param>
         public JsonObject(ref Utf8JsonReader reader, string? name = null)
         {
+            FindName(name);
+            
             JsonObject? jsonObject = CreateFromJsonReader(ref reader);
-
             (Properties, Children, Arrays, Name) = (jsonObject?.Properties ?? new List<JsonProperty>(),
                 jsonObject?.Children ?? new List<JsonObject>(), jsonObject?.Arrays ?? new List<JsonArray>(), name);
         }
+
+        private void FindName(string? name) =>
+            Name = Properties.FirstOrDefault(p => p.Name.ToLower() is "id" or "name")?.Name ?? name;
 
         /// <summary>
         /// Creates a new <see cref="JsonObject"/> instance based on the data received from a
