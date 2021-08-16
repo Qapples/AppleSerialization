@@ -53,10 +53,10 @@ namespace AppleSerialization.Json
         public JsonObject(IList<JsonProperty>? properties = null, IList<JsonObject>? children = null,
             IList<JsonArray>? arrays = null, string? name = null)
         {
-            FindName(name);
-            
             (Properties, Children, Arrays) = (properties ?? new List<JsonProperty>(),
                 children ?? new List<JsonObject>(), arrays ?? new List<JsonArray>());
+            
+            FindName(name);
         }
 
         /// <summary>
@@ -72,15 +72,15 @@ namespace AppleSerialization.Json
         /// <see cref="Name"/> will be null.</param>
         public JsonObject(ref Utf8JsonReader reader, string? name = null)
         {
-            FindName(name);
-            
             JsonObject? jsonObject = CreateFromJsonReader(ref reader);
             (Properties, Children, Arrays, Name) = (jsonObject?.Properties ?? new List<JsonProperty>(),
                 jsonObject?.Children ?? new List<JsonObject>(), jsonObject?.Arrays ?? new List<JsonArray>(), name);
+
+            FindName(name);
         }
 
         private void FindName(string? name) =>
-            Name = Properties.FirstOrDefault(p => p.Name.ToLower() is "id" or "name")?.Name ?? name;
+            Name = Properties.FirstOrDefault(p => p.Name.ToLower() is "id" or "name")?.Value as string ?? name;
 
         /// <summary>
         /// Creates a new <see cref="JsonObject"/> instance based on the data received from a
@@ -208,18 +208,18 @@ namespace AppleSerialization.Json
 
         private void WriteToJson(Utf8JsonWriter writer)
         {
-            if (Name is not null) writer.WritePropertyName(Name);
             writer.WriteStartObject();
             
             //arrays
             foreach (JsonArray arr in Arrays)
             {
-                writer.WritePropertyName(arr.Name);
+                if (arr.Name is not null) writer.WritePropertyName(arr.Name);
                 writer.WriteStartArray();
                 
                 foreach (JsonObject arrObj in arr.Objects)
                 {
-                    Debug.WriteLine(arrObj.Properties.First().Value);
+                    //Debug.WriteLine(arrObj.Properties.First().Value);
+                    if (arrObj.Name is not null) writer.WritePropertyName(arrObj.Name);
                     arrObj.WriteToJson(writer);
                 }
                 
@@ -235,6 +235,7 @@ namespace AppleSerialization.Json
             //children
             foreach (JsonObject child in Children)
             {
+                if (child.Name is not null) writer.WritePropertyName(child.Name);
                 child.WriteToJson(writer);
             }
 
