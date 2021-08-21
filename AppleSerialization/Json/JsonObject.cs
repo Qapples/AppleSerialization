@@ -206,6 +206,30 @@ namespace AppleSerialization.Json
             }
         }
 
+        /// <summary>
+        /// Combines the properties, arrays, and children of two instanes of <see cref="JsonObject"/> and creates a
+        /// new <see cref="JsonObject"/> instance from it.
+        /// </summary>
+        /// <param name="a">The first <see cref="JsonObject"/> instance.</param>
+        /// <param name="b">The second <see cref="JsonObject"/> instance.</param>
+        /// <returns>A new <see cref="JsonObject"/> instance whose properties, arrays, and children from a and b are
+        /// combined.</returns>
+        public static JsonObject operator +(JsonObject a, JsonObject b)
+        {
+            JsonObject outObject = new();
+
+            foreach (JsonProperty property in a.Properties) outObject.Properties.Add(property);
+            foreach (JsonProperty property in b.Properties) outObject.Properties.Add(property);
+            
+            foreach (JsonArray array in a.Arrays) outObject.Arrays.Add(array);
+            foreach (JsonArray array in b.Arrays) outObject.Arrays.Add(array);
+            
+            foreach (JsonObject child in a.Children) outObject.Children.Add(child);
+            foreach (JsonObject child in b.Children) outObject.Children.Add(child);
+
+            return outObject;
+        }
+
         private void WriteToJson(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
