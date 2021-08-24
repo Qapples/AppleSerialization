@@ -21,9 +21,12 @@ namespace AppleSerialization.Json
         /// <summary>
         /// Constructs a <see cref="JsonArray"/> instance.
         /// </summary>
-        /// <param name="name">Name/Identifier of the array. Not all instances will have one.</param>
-        /// <param name="objects">The <see cref="JsonObject"/> instances in the array.</param>
-        public JsonArray(string name, IList<JsonObject> objects) => (Name, Objects) = (name, objects);
+        /// <param name="name">Name/Identifier of the array. Not all instances will have one. If the instance does not
+        /// have a name or identifier, then the <see cref="Name"/> property will be null.</param>
+        /// <param name="objects">The <see cref="JsonObject"/> instances in the array. If not set to, then the default
+        /// value will be an empty <see cref="List{JsonObject}"/>.</param>
+        public JsonArray(string? name = null, IList<JsonObject>? objects = null) =>
+            (Name, Objects) = (name, objects ?? new List<JsonObject>());
 
         public IEnumerator<JsonObject> GetEnumerator() => Objects.GetEnumerator();
 
