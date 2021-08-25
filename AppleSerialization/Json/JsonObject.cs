@@ -40,18 +40,18 @@ namespace AppleSerialization.Json
         /// <summary>
         /// Constructs a new <see cref="JsonObject"/> instance.
         /// </summary>
+        /// <param name="name">If available, this represents the name of the object. Not every object will and can have
+        /// a name (i.e. elements in an array). If this value is not set to, then a name or identifier will attempt to
+        /// be found by finding a value in <see cref="Properties"/> whose name is "id" or "name". If not found, then
+        /// <see cref="Name"/> will be null.</param>
         /// <param name="properties">see cref="JsonProperty"/> instances that describe the properties (and their values)
         /// of the object. If this parameter null, a new <see cref="List{T}"/> will be created.</param>
         /// <param name="children"><see cref="JsonObject"/> instances that are within the instance. If this parameter
         /// is null, a new <see cref="List{T}"/> will be created.</param>
         /// <param name="arrays"><see cref="JsonArray"/> instance that represent any and all arrays the object will
         /// have. If null, a new <see cref="List{T}"/> will be created.</param>
-        /// <param name="name">If available, this represents the name of the object. Not every object will and can have
-        /// a name (i.e. elements in an array). If this value is not set to, then a name or identifier will attempt to
-        /// be found by finding a value in <see cref="Properties"/> whose name is "id" or "name". If not found, then
-        /// <see cref="Name"/> will be null.</param>
-        public JsonObject(IList<JsonProperty>? properties = null, IList<JsonObject>? children = null,
-            IList<JsonArray>? arrays = null, string? name = null)
+        public JsonObject(string? name = null, IList<JsonProperty>? properties = null, IList<JsonObject>? children = null,
+            IList<JsonArray>? arrays = null)
         {
             (Properties, Children, Arrays) = (properties ?? new List<JsonProperty>(),
                 children ?? new List<JsonObject>(), arrays ?? new List<JsonArray>());
