@@ -6,7 +6,7 @@ namespace AppleSerialization.Json
     /// <summary>
     /// Represents an array of <see cref="JsonObject"/> instances.
     /// </summary>
-    public class JsonArray : ICollection<JsonObject>
+    public class JsonArray : ICollection<JsonObject>, IName
     {
         /// <summary>
         /// Name/Identifier of the array. Not all instances will have one.

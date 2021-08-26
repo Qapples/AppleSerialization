@@ -5,7 +5,7 @@ namespace AppleSerialization.Json
     /// <summary>
     /// Represents the data of a Json property.
     /// </summary>
-    public class JsonProperty
+    public class JsonProperty : IName
     {
         /// <summary>
         /// The name of the property.

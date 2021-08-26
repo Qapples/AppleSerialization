@@ -14,7 +14,7 @@ namespace AppleSerialization.Json
     /// Represents a collection of <see cref="JsonProperty"/> instance that describe each individual property and value
     /// of an object represented in json. Also contains other <see cref="JsonObject"/> instances as children
     /// </summary>
-    public class JsonObject
+    public class JsonObject : IName
     {
         /// <summary>
         /// The name of this object. If null, then the object in question does not have a name (i.e. an element in an
@@ -87,7 +87,7 @@ namespace AppleSerialization.Json
         /// <see cref="Utf8JsonReader"/> instance.
         /// </summary>
         /// <param name="reader">The <see cref="Utf8JsonReader"/> instance that provides the data necessary to create
-        /// a new <see cref="JsonObject"/> instance. In most cases, the <see cref="Utf8JsonReader"/> is reciving
+        /// a new <see cref="JsonObject"/> instance. In most cases, the <see cref="Utf8JsonReader"/> is receiving
         /// data from a file.</param>
         /// <returns>A new <see cref="JsonObject"/> object that represents the json data given to by the
         /// <see cref="Utf8JsonReader"/>.</returns>
@@ -97,7 +97,7 @@ namespace AppleSerialization.Json
             if (Environment.DefaultFontSystem is null || Environment.GraphicsDevice is null ||
                 Environment.ContentManager is null)
             {
-                Debug.WriteLine("One or more of the enviornment variables are null: " +
+                Debug.WriteLine("One or more of the environment variables are null: " +
                                 $"\nDefaultFontSystem: {(Environment.DefaultFontSystem is null ? "null" : "not null")} " +
                                 $"\nGraphicsDevice: {(Environment.GraphicsDevice is null ? "null" : "not null")} " +
                                 $"\nContentManager: {(Environment.ContentManager is null ? "null" : "not null")}");
