@@ -249,22 +249,35 @@ namespace AppleSerialization
                 return null;
             }
 
-            if (Environment.TypeAliases.TryGetValue(typeStr.ToLower(), out var alias))
+            return GetTypeFromString(typeStr);
+        }
+
+        /// <summary>
+        /// Attempts to obtain a type from name.
+        /// </summary>
+        /// <remarks>External types must be added to <see cref="Environment.ExternalTypes"/>. Otherwise, the external
+        /// type cannot be found and null will be returned.</remarks>
+        /// <param name="typeName">The name of the type.</param>
+        /// <returns>If <see cref="typeName"/> is a valid type name or a valid alias for a type, then the type that
+        /// <see cref="typeName"/> represents is returned. Otherwise, null is returned.</returns>
+        public static Type? GetTypeFromString(string typeName)
+        {
+            if (Environment.TypeAliases.TryGetValue(typeName.ToLower(), out var alias))
             {
-                typeStr = alias;
+                typeName = alias;
             }
 
-            Type? valueType = Type.GetType(typeStr!);
+            Type? valueType = Type.GetType(typeName!);
             if (valueType is not null) return valueType;
 
-            if (Environment.ExternalTypes.TryGetValue(typeStr, out valueType))
+            if (Environment.ExternalTypes.TryGetValue(typeName, out valueType))
             {
                 return valueType;
             }
 
             Debug.WriteLine(
-                $"Can't find type of name {typeStr}! GetTypeFromObject (private) returning null." +
-                "Ensure that the type exists in Environment.ExternalTypes and that the type name is correct.");
+                $"{nameof(ConverterHelper)}.{nameof(GetTypeFromString)}: Can't find type of name {typeName}! " +
+                $"Ensure that the type exists in Environment.ExternalTypes and that the type name is correct.");
 
             return null;
         }
