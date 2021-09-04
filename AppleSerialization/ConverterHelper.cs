@@ -242,8 +242,19 @@ namespace AppleSerialization
             reader.Read();
 
             string? typeStr = reader.GetString();
-            Type? valueType = Type.GetType(typeStr!);
+            if (typeStr is null)
+            {
+                Debug.WriteLine($"{nameof(ConverterHelper)}.{nameof(GetTypeFromObject)}: cannot get the type! " +
+                                $"Returning null.");
+                return null;
+            }
 
+            if (Environment.TypeAliases.TryGetValue(typeStr.ToLower(), out var alias))
+            {
+                typeStr = alias;
+            }
+
+            Type? valueType = Type.GetType(typeStr!);
             if (valueType is not null) return valueType;
 
             if (Environment.ExternalTypes.TryGetValue(typeStr, out valueType))
@@ -252,7 +263,7 @@ namespace AppleSerialization
             }
 
             Debug.WriteLine(
-                $"Can't find type of name {typeStr ?? "null"}! GetTypeFromObject (private) returning null." +
+                $"Can't find type of name {typeStr}! GetTypeFromObject (private) returning null." +
                 "Ensure that the type exists in Environment.ExternalTypes and that the type name is correct.");
 
             return null;

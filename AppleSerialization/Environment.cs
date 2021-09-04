@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -40,6 +41,12 @@ namespace AppleSerialization
         /// The key is the name of the type in string form.
         /// </summary>
         public static Dictionary<string, Type> ExternalTypes { get; } = new();
+
+        /// <summary>
+        /// A <see cref="Dictionary{TKey,TValue}"/> that provides alternative aliases for types. The key represents
+        /// the alias for a type and the resulting value is the true, working name for that type.
+        /// </summary>
+        public static Dictionary<string, string> TypeAliases { get; } = new();
         
         /// <summary>
         /// Default <see cref="JsonSerializerOptions"/> instance for use in any serialization methods that accepts such
@@ -71,6 +78,21 @@ namespace AppleSerialization
             }
 
             return Path.GetFullPath(path.Path);
+        }
+
+        /// <summary>
+        /// Parses the contents of a file detailing alternative aliases for types that will be present when loading
+        /// entity files. The aliases can be found in the <see cref="TypeAliases"/> instance.
+        /// </summary>
+        /// <param name="fileContents">The CONTENTS of the file to parse.</param>
+        public static void LoadTypeAliasFileContents(string fileContents)
+        {
+            foreach (Match match in Regex.Matches(fileContents, @"(\w+)\W+""([\w., ]+)"))
+            {
+                if (match.Groups.Count < 3) continue;
+
+                TypeAliases.Add(match.Groups[1].Value.ToLower(), match.Groups[2].Value);
+            }
         }
     }
 }
