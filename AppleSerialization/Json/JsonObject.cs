@@ -205,9 +205,59 @@ namespace AppleSerialization.Json
                 return false;
             }
         }
+        
+        //--------------
+        // Find methods
+        //--------------
+        
+        public JsonObject? FindChild(in string name, in StringComparison comparison = StringComparison.Ordinal)
+        {
+            foreach (JsonObject child in Children)
+            {
+                if (string.Equals(name, child.Name, comparison)) return child;
 
+                JsonObject? returnObj = child.FindChild(in name, in comparison);
+                if (returnObj is not null) return returnObj;
+                
+            }
+
+            return null;
+        }
+
+        public JsonProperty? FindProperty(in string name, in StringComparison comparison = StringComparison.Ordinal)
+        {
+            foreach (JsonProperty property in Properties)
+            {
+                if (string.Equals(name, property.Name, comparison)) return property;
+            }
+
+            foreach (JsonObject child in Children)
+            {
+                JsonProperty? returnProp = child.FindProperty(in name, in comparison);
+                if (returnProp is not null) return returnProp;
+            }
+
+            return null;
+        }
+        
+        public JsonArray? FindArray(in string name, in StringComparison comparison = StringComparison.Ordinal)
+        {
+            foreach (JsonArray array in Arrays)
+            {
+                if (string.Equals(name, array.Name, comparison)) return array;
+            }
+
+            foreach (JsonObject child in Children)
+            {
+                JsonArray? returnArr = child.FindArray(in name, in comparison);
+                if (returnArr is not null) return returnArr;
+            }
+
+            return null;
+        }
+        
         /// <summary>
-        /// Combines the properties, arrays, and children of two instanes of <see cref="JsonObject"/> and creates a
+        /// Combines the properties, arrays, and children of two instances of <see cref="JsonObject"/> and creates a
         /// new <see cref="JsonObject"/> instance from it.
         /// </summary>
         /// <param name="a">The first <see cref="JsonObject"/> instance.</param>
