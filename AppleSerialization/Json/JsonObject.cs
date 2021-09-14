@@ -210,6 +210,14 @@ namespace AppleSerialization.Json
         // Find methods
         //--------------
         
+        /// <summary>
+        /// Recursively finds a <see cref="JsonObject"/> instance within <see cref="Children"/>.
+        /// </summary>
+        /// <param name="name">The name of the <see cref="JsonObject"/> instance to find.</param>
+        /// <param name="comparison">Optional <see cref="StringComparison"/> enum that determines how names should be
+        /// compared. By default, it is <see cref="StringComparison.Ordinal"/></param>
+        /// <returns>If found, then the <see cref="JsonObject"/> with the specified name is returned. Otherwise, null
+        /// is returned.</returns>
         public JsonObject? FindChild(in string name, in StringComparison comparison = StringComparison.Ordinal)
         {
             foreach (JsonObject child in Children)
@@ -224,6 +232,15 @@ namespace AppleSerialization.Json
             return null;
         }
 
+        /// <summary>
+        /// Recursively finds a <see cref="JsonProperty"/> instance within <see cref="Properties"/> in this
+        /// instance and it's <see cref="Children"/>.
+        /// </summary>
+        /// <param name="name">The name of the <see cref="JsonProperty"/> instance to find.</param>
+        /// <param name="comparison">Optional <see cref="StringComparison"/> enum that determines how names should be
+        /// compared. By default, it is <see cref="StringComparison.Ordinal"/></param>
+        /// <returns>If found, then the <see cref="JsonProperty"/> with the specified name is returned. Otherwise, null
+        /// is returned.</returns>
         public JsonProperty? FindProperty(in string name, in StringComparison comparison = StringComparison.Ordinal)
         {
             foreach (JsonProperty property in Properties)
@@ -240,6 +257,15 @@ namespace AppleSerialization.Json
             return null;
         }
         
+        /// <summary>
+        /// Recursively finds a <see cref="JsonArray"/> instance within <see cref="Arrays"/> in this
+        /// instance and it's <see cref="Children"/>.
+        /// </summary>
+        /// <param name="name">The name of the <see cref="JsonArray"/> instance to find.</param>
+        /// <param name="comparison">Optional <see cref="StringComparison"/> enum that determines how names should be
+        /// compared. By default, it is <see cref="StringComparison.Ordinal"/></param>
+        /// <returns>If found, then the <see cref="JsonArray"/> with the specified name is returned. Otherwise, null
+        /// is returned.</returns>
         public JsonArray? FindArray(in string name, in StringComparison comparison = StringComparison.Ordinal)
         {
             foreach (JsonArray array in Arrays)
