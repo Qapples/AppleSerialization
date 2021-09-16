@@ -221,11 +221,14 @@ namespace AppleSerialization
         }
 
         /// <summary>
-        /// Finds the $type property in a Json object and returns the corresponding type. Returns null if not found.
+        /// Finds the property with a name of <see cref="Environment.TypeIdentifier"/> in a Json object and returns the
+        /// corresponding type. Returns null if not found.
         /// </summary>
         private static Type? GetTypeFromObject(ref Utf8JsonReader reader)
         {
-            while ((reader.TokenType != JsonTokenType.PropertyName || reader.GetString()! != "$type") &&
+            string typeIdentifier = Environment.TypeIdentifier;
+            
+            while ((reader.TokenType != JsonTokenType.PropertyName || reader.GetString()! != typeIdentifier) &&
                    reader.TokenType != JsonTokenType.EndObject)
             {
                 reader.Read();
@@ -233,7 +236,7 @@ namespace AppleSerialization
 
             if (reader.TokenType == JsonTokenType.EndObject)
             {
-                Debug.WriteLine($"$type specifier was not found in the object and the type could not be " +
+                Debug.WriteLine($"type specifier was not found in the object and the type could not be " +
                                 $"determined!. GetTypeFromObject (private) returning null.");
 
                 return null;

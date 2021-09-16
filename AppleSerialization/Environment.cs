@@ -47,6 +47,12 @@ namespace AppleSerialization
         /// the alias for a type and the resulting value is the true, working name for that type.
         /// </summary>
         public static Dictionary<string, string> TypeAliases { get; } = new();
+
+        /// <summary>
+        /// If a <see cref="JsonProperty"/> instance whose <see cref="JsonProperty.Name"/> is this value then that
+        /// property represents the type of the object. By default, this value is "$type".
+        /// </summary>
+        public static string TypeIdentifier { get; set; } = "$type";
         
         /// <summary>
         /// Default <see cref="JsonSerializerOptions"/> instance for use in any serialization methods that accepts such

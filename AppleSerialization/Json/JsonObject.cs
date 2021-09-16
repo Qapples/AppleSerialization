@@ -226,7 +226,6 @@ namespace AppleSerialization.Json
 
                 JsonObject? returnObj = child.FindChild(in name, in comparison);
                 if (returnObj is not null) return returnObj;
-                
             }
 
             return null;
