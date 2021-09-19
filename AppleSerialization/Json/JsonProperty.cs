@@ -8,12 +8,13 @@ namespace AppleSerialization.Json
     public class JsonProperty : IName
     {
         /// <summary>
-        /// The name of the property.
+        /// The name of the property. If null, then this property does not have a name and is likely an element of
+        /// an array.
         /// </summary>
         public string? Name { get; set; }
         
         /// <summary>
-        /// The value of the property. If null, then this object does not have a parent.
+        /// The value of the property. If null, then this property does not have a parent.
         /// </summary>
         public object? Value { get; set; }
 
@@ -25,7 +26,7 @@ namespace AppleSerialization.Json
         public JsonObject? Parent { get; set; }
 
         /// <summary>
-        /// Represents the the type of value that this object represents. 
+        /// Represents the the type of value that this property represents. 
         /// </summary>
         public JsonValueKind ValueKind { get; set; }
 
