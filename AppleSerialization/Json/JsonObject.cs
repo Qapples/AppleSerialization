@@ -58,8 +58,8 @@ namespace AppleSerialization.Json
         /// is null, a new <see cref="List{T}"/> will be created.</param>
         /// <param name="arrays"><see cref="JsonArray"/> instance that represent any and all arrays the object will
         /// have. If null, a new <see cref="List{T}"/> will be created.</param>
-        public JsonObject(string? name = null, JsonObject? parent = null, IList<JsonProperty>? properties = null, IList<JsonObject>? children = null,
-            IList<JsonArray>? arrays = null)
+        public JsonObject(string? name = null, JsonObject? parent = null, IList<JsonProperty>? properties = null,
+            IList<JsonObject>? children = null, IList<JsonArray>? arrays = null)
         {
             (Name, Parent, Properties, Children, Arrays) = (name, parent, properties ?? new List<JsonProperty>(),
                 children ?? new List<JsonObject>(), arrays ?? new List<JsonArray>());
@@ -382,9 +382,15 @@ namespace AppleSerialization.Json
         
         private static void WriteProperty(Utf8JsonWriter writer, JsonProperty property)
         {
-            if (property.Value is null) return;
+            const string methodName = nameof(JsonObject) + "." + nameof(WriteProperty);
+
+            if (property.Value is null)
+            {
+                Debug.WriteLine($"{methodName}: property does not have a value. Cannot write!");
+                return;
+            }
             
-            writer.WritePropertyName(property.Name);
+            if (property.Name is not null) writer.WritePropertyName(property.Name);
             
             switch (property.ValueKind)
             {
@@ -429,8 +435,6 @@ namespace AppleSerialization.Json
                 case TypeCode.Int64: writer.WriteNumberValue((Int64) value); break;
             }
         }
-
-        //private static void WriteNumber(Utf8JsonWriter writer, )
 
         //this is an array because we don't actually know the exact type of the number before hand. therefore, we have
         //to go through this array and brute force it (there aren't that many types so for the most part it should be
