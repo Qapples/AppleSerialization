@@ -21,6 +21,13 @@ namespace AppleSerialization.Json
         /// array)
         /// </summary>
         public string? Name { get; set; }
+        
+        /// <summary>
+        /// The parent of this object. If null, then this object does not have a parent.
+        /// </summary>
+        /// <remarks>If the object is an element of a <see cref="JsonArray"/>, the parent will be the parent of that
+        /// <see cref="JsonArray"/>.</remarks>
+        public JsonObject? Parent { get; set; }
     
         /// <summary>
         /// <see cref="JsonProperty"/> instances that describe the properties (and their values) of this object.
@@ -44,19 +51,20 @@ namespace AppleSerialization.Json
         /// a name (i.e. elements in an array). If this value is not set to, then a name or identifier will attempt to
         /// be found by finding a value in <see cref="Properties"/> whose name is "id" or "name". If not found, then
         /// <see cref="Name"/> will be null.</param>
+        /// <param name="parent">The parent of this object. If null, then this object does not have a parent.</param>
         /// <param name="properties">see cref="JsonProperty"/> instances that describe the properties (and their values)
         /// of the object. If this parameter null, a new <see cref="List{T}"/> will be created.</param>
         /// <param name="children"><see cref="JsonObject"/> instances that are within the instance. If this parameter
         /// is null, a new <see cref="List{T}"/> will be created.</param>
         /// <param name="arrays"><see cref="JsonArray"/> instance that represent any and all arrays the object will
         /// have. If null, a new <see cref="List{T}"/> will be created.</param>
-        public JsonObject(string? name = null, IList<JsonProperty>? properties = null, IList<JsonObject>? children = null,
+        public JsonObject(string? name = null, JsonObject? parent = null, IList<JsonProperty>? properties = null, IList<JsonObject>? children = null,
             IList<JsonArray>? arrays = null)
         {
-            (Properties, Children, Arrays) = (properties ?? new List<JsonProperty>(),
+            (Name, Parent, Properties, Children, Arrays) = (name, parent, properties ?? new List<JsonProperty>(),
                 children ?? new List<JsonObject>(), arrays ?? new List<JsonArray>());
             
-            FindName(name);
+            if (name is null) FindName(name);
         }
 
         /// <summary>
@@ -66,21 +74,23 @@ namespace AppleSerialization.Json
         /// <param name="reader">The <see cref="Utf8JsonReader"/> instance that provides the data necessary to create
         /// a new <see cref="JsonObject"/> instance. In most cases, the <see cref="Utf8JsonReader"/> is reciving
         /// data from a file.</param>
+        /// <param name="parent">The parent of this object. If null, then this object does not have a parent.</param>
         /// <param name="name">If available, this represents the name of the object. Not every object will and can have
         /// a name (i.e. elements in an array). If this value is not set to, then a name or identifier will attempt to
         /// be found by finding a value in <see cref="Properties"/> whose name is "id" or "name". If not found, then
         /// <see cref="Name"/> will be null.</param>
-        public JsonObject(ref Utf8JsonReader reader, string? name = null)
+        public JsonObject(ref Utf8JsonReader reader, string? name = null, JsonObject? parent = null)
         {
             JsonObject? jsonObject = CreateFromJsonReader(ref reader);
-            (Properties, Children, Arrays, Name) = (jsonObject?.Properties ?? new List<JsonProperty>(),
-                jsonObject?.Children ?? new List<JsonObject>(), jsonObject?.Arrays ?? new List<JsonArray>(), name);
+            (Name, Parent, Properties, Children, Arrays) = (name, parent,
+                jsonObject?.Properties ?? new List<JsonProperty>(), jsonObject?.Children ?? new List<JsonObject>(),
+                jsonObject?.Arrays ?? new List<JsonArray>());
 
-            FindName(name);
+            if (name is null) FindName(name);
         }
 
         private void FindName(string? name) =>
-            Name = Properties.FirstOrDefault(p => p.Name.ToLower() is "id" or "name")?.Value as string ?? name;
+            Name = Properties.FirstOrDefault(p => p.Name?.ToLower() is "id" or "name")?.Value as string ?? name;
 
         /// <summary>
         /// Creates a new <see cref="JsonObject"/> instance based on the data received from a
@@ -117,14 +127,14 @@ namespace AppleSerialization.Json
                 if (reader.TokenType == JsonTokenType.StartArray)
                 {
                     //TODO: If jsonArray is null, then undefined behavior could come up. Be careful!
-                    JsonArray? jsonArray = GetObjectArray(ref reader, propertyName);
+                    JsonArray? jsonArray = GetObjectArray(ref reader, propertyName, rootObject);
                     if (jsonArray is null) break;
 
                     rootObject.Arrays.Add(jsonArray);
                 }
                 else if (reader.TokenType == JsonTokenType.StartObject)
                 {
-                    rootObject.Children.Add(new JsonObject(ref reader, propertyName));
+                    rootObject.Children.Add(new JsonObject(ref reader, propertyName, rootObject));
                 }
                 else
                 {
@@ -151,7 +161,7 @@ namespace AppleSerialization.Json
                         Environment.CurrentDeserializingObjectSize = (Vector2) parameterValue;
                     }
         
-                    rootObject.Properties.Add(new JsonProperty(propertyName, parameterValue, valueKind));
+                    rootObject.Properties.Add(new JsonProperty(propertyName, parameterValue, rootObject, valueKind));
                 }
             }
         
@@ -341,7 +351,7 @@ namespace AppleSerialization.Json
             writer.WriteEndObject();
         }
         
-        private static JsonArray? GetObjectArray(ref Utf8JsonReader reader, string name)
+        private static JsonArray? GetObjectArray(ref Utf8JsonReader reader, string name, JsonObject? parent = null)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
@@ -356,7 +366,7 @@ namespace AppleSerialization.Json
             {
                 while (reader.TokenType != JsonTokenType.EndObject && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    JsonObject newObject = new(ref reader);
+                    JsonObject newObject = new(ref reader, null, parent);
 
                     if (newObject.Children.Count > 0 || newObject.Properties.Count > 0)
                     {
@@ -367,7 +377,7 @@ namespace AppleSerialization.Json
                 }
             }
 
-            return new JsonArray(name, outputList);
+            return new JsonArray(name, parent, outputList);
         }
         
         private static void WriteProperty(Utf8JsonWriter writer, JsonProperty property)
