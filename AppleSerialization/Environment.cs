@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using FontStashSharp;
@@ -9,6 +11,10 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace AppleSerialization
 {
+    /// <summary>
+    /// A collection of fields and properties that change how AppleSerialization as a whole operates. Some fields
+    /// are required to be set to in order for some functionalities to operate. 
+    /// </summary>
     public static class Environment
     {
 #nullable disable
@@ -66,6 +72,10 @@ namespace AppleSerialization
 
         public static readonly JsonWriterOptions DefaultWriterOptions = new() {Indented = true};
 #nullable enable
+        
+        //---------------------
+        // Extension Methods
+        //---------------------
 
         /// <summary>
         /// Returns the full path of a <see cref="ContentPath"/> instance. If <see cref="ContentPath.IsContentPath"/>
@@ -100,5 +110,16 @@ namespace AppleSerialization
                 TypeAliases.Add(match.Groups[1].Value.ToLower(), match.Groups[2].Value);
             }
         }
+
+        /// <summary>
+        /// Creates a <see cref="List{T}"/> where each member is a clone of each instance of a
+        /// <see cref="IEnumerable{T}"/> where T implements <see cref="ICloneable"/>.
+        /// </summary>
+        /// <param name="instances">The instances of <see cref="T"/> to clone.</param>
+        /// <typeparam name="T">The type of the instances</typeparam>
+        /// <returns>A <see cref="List{T}"/> where each member represents a cloned instance of a member in the
+        /// provided <see cref="IEnumerable{T}"/></returns>
+        internal static List<T> MemberClone<T>(this IEnumerable<T> instances) where T : ICloneable =>
+            instances.Select(e => (T) e.Clone()).ToList();
     }
 }
