@@ -107,7 +107,7 @@ namespace AppleSerialization
             {
                 if (match.Groups.Count < 3) continue;
 
-                TypeAliases.Add(match.Groups[1].Value.ToLower(), match.Groups[2].Value);
+                TypeAliases.Add(match.Groups[1].Value, match.Groups[2].Value);
             }
         }
 
