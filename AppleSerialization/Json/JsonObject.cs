@@ -14,7 +14,7 @@ namespace AppleSerialization.Json
     /// Represents a collection of <see cref="JsonProperty"/> instance that describe each individual property and value
     /// of an object represented in json. Also contains other <see cref="JsonObject"/> instances as children
     /// </summary>
-    public class JsonObject : IName
+    public class JsonObject : IName, ICloneable
     {
         /// <summary>
         /// The name of this object. If null, then the object in question does not have a name (i.e. an element in an
@@ -219,6 +219,8 @@ namespace AppleSerialization.Json
         //--------------
         // Find methods
         //--------------
+        //we could use a generic here to reduce code reuse here, but I figured it would be much more straightforward
+        //to have three different methods to simplify use here. 
         
         /// <summary>
         /// Recursively finds a <see cref="JsonObject"/> instance within <see cref="Children"/>.
@@ -290,7 +292,17 @@ namespace AppleSerialization.Json
 
             return null;
         }
-        
+
+        /// <summary>
+        /// Creates a deep copy of this <see cref="JsonObject"/> instance including it's <see cref="Properties"/>,
+        /// <see cref="Children"/>, and <see cref="Arrays"/>.
+        /// </summary>
+        /// <returns>A new instance of <see cref="JsonObject"/> whose data is identical but separate from this instance.
+        /// </returns>
+        /// <remarks>The <see cref="Parent"/> of the new instance will be the same as this one.</remarks>
+        public object Clone() => new JsonObject(Name, Parent, Properties.MemberClone(), Children.MemberClone(),
+            Arrays.MemberClone());
+
         /// <summary>
         /// Combines the properties, arrays, and children of two instances of <see cref="JsonObject"/> and creates a
         /// new <see cref="JsonObject"/> instance from it.

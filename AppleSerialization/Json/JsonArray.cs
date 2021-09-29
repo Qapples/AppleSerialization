@@ -1,12 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AppleSerialization.Json
 {
     /// <summary>
     /// Represents an array of <see cref="JsonObject"/> instances.
     /// </summary>
-    public class JsonArray : ICollection<JsonObject>, IName
+    public class JsonArray : ICollection<JsonObject>, IName, ICloneable
     {
         /// <summary>
         /// Name/Identifier of the array. Not all instances will have one.
@@ -36,6 +38,16 @@ namespace AppleSerialization.Json
         /// value will be an empty <see cref="List{JsonObject}"/>.</param>
         public JsonArray(string? name = null, JsonObject? parent = null, IList<JsonObject>? objects = null) =>
             (Name, Parent, Objects) = (name, parent, objects ?? new List<JsonObject>());
+
+
+        /// <summary>
+        /// Creates a deep copy of this <see cref="JsonArray"/> instance. All elements in <see cref="Objects"/> are
+        /// also copied.
+        /// </summary>
+        /// <returns>A new instance of <see cref="JsonArray"/> whose data is identical but separate from this instance.
+        /// </returns>
+        /// <remarks>The <see cref="Parent"/> of the new instance will be the same as this one.</remarks>
+        public object Clone() => new JsonArray(Name, Parent, Objects.MemberClone());
 
         public IEnumerator<JsonObject> GetEnumerator() => Objects.GetEnumerator();
 

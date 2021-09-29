@@ -1,11 +1,13 @@
+using System;
 using System.Text.Json;
+using FastDeepCloner;
 
 namespace AppleSerialization.Json
 {
     /// <summary>
     /// Represents the data of a Json property.
     /// </summary>
-    public class JsonProperty : IName
+    public class JsonProperty : IName, ICloneable
     {
         /// <summary>
         /// The name of the property. If null, then this property does not have a name and is likely an element of
@@ -42,5 +44,24 @@ namespace AppleSerialization.Json
         public JsonProperty(string? name = null, object? value = null, JsonObject? parent = null,
             in JsonValueKind valueKind = JsonValueKind.Null) =>
             (Name, Value, Parent, ValueKind) = (name, value, parent, valueKind);
+
+        /// <summary>
+        /// Creates a deep clone of this <see cref="JsonProperty"/> instance along with a deep clone of
+        /// <see cref="Value"/>. If <see cref="Value"/> does not implement <see cref="ICloneable"/> then
+        /// <see cref="DeepCloner"/> will be used instead to clone the object.
+        /// </summary>
+        /// <returns>A new deep clone instance that has identical data to this <see cref="JsonProperty"/> instance.
+        /// </returns>
+        /// <remarks>The <see cref="Parent"/> of the new instance will be the same as this one.</remarks>
+        public object Clone()
+        {
+            if (Value is ICloneable cloneable)
+            {
+                return new JsonProperty(Name, Value is null ? null : cloneable.Clone(), Parent, ValueKind);
+            }
+
+            JsonProperty thisClone = this.Clone<JsonProperty>();
+            return new JsonProperty(Name, Value is null ? null : thisClone, Parent, ValueKind);
+        }
     }
 }
