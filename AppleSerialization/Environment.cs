@@ -15,6 +15,13 @@ namespace AppleSerialization
     /// A collection of fields and properties that change how AppleSerialization as a whole operates. Some fields
     /// are required to be set to in order for some functionalities to operate. 
     /// </summary>
+    
+    /* TODO:
+     * Decentralize this file. I think it's better if we had a setting class to pass in rather than a global static
+     * class for settings. Unfortunately, this would require quite a bit of refactoring as other files are coupled
+     * to this file.
+     */
+    
     public static class Environment
     {
 #nullable disable
