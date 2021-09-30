@@ -265,7 +265,7 @@ namespace AppleSerialization
         /// <see cref="typeName"/> represents is returned. Otherwise, null is returned.</returns>
         public static Type? GetTypeFromString(string typeName)
         {
-            if (Environment.TypeAliases.TryGetValue(typeName.ToLower(), out var alias))
+            if (Environment.TypeAliases.TryGetValue(typeName, out var alias))
             {
                 typeName = alias;
             }
