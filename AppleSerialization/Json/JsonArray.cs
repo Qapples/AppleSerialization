@@ -39,7 +39,6 @@ namespace AppleSerialization.Json
         public JsonArray(string? name = null, JsonObject? parent = null, IList<JsonObject>? objects = null) =>
             (Name, Parent, Objects) = (name, parent, objects ?? new List<JsonObject>());
 
-
         /// <summary>
         /// Creates a deep copy of this <see cref="JsonArray"/> instance. All elements in <see cref="Objects"/> are
         /// also copied.
@@ -66,5 +65,11 @@ namespace AppleSerialization.Json
         public int Count => Objects.Count;
         
         public bool IsReadOnly => Objects.IsReadOnly;
+
+        public JsonObject this[int i]
+        {
+            get => Objects[i];
+            set => Objects[i] = value;
+        }
     }
 }
