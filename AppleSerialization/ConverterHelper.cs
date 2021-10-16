@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AppleSerialization.Converters;
@@ -305,6 +306,39 @@ namespace AppleSerialization
             }
 
             return null;
+        }
+        
+        //----------------
+        // Parse helpers
+        //----------------
+        internal static bool IsNumChar(char c) => c == '.' || char.IsDigit(c);
+        
+        internal static bool GetNumFromStrVector(in string str, int startIndex, out float output, out int endIndex)
+        {
+            //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
+            //values
+            
+            int i = startIndex;
+            StringBuilder strToParse = new();
+
+            bool addToStr = false;
+            for (; i < str.Length; i++)
+            {
+                char c = str[i];
+
+                if (IsNumChar(c))
+                {
+                    addToStr = true;
+                    strToParse.Append(c);
+                }
+                else if (addToStr)
+                {
+                    break;
+                }
+            }
+
+            endIndex = i;
+            return float.TryParse(strToParse.ToString(), out output);
         }
 
         //we can't pass values by reference using reflection, so we use this hacky solution to do so

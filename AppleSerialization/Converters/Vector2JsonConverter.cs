@@ -33,13 +33,13 @@ namespace AppleSerialization.Converters
 
             //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
             //values
-            if (!GetNumFromStrVector(in readerStr, 0, out float x, out int i))
+            if (!ConverterHelper.GetNumFromStrVector(in readerStr, 0, out float x, out int i))
             {
                 Debug.WriteLine($"Unable to parse X value of {readerStr}. Returning default value of (0, 0)");
                 return new Vector2(0, 0);
             }
 
-            if (!GetNumFromStrVector(in readerStr, i, out float y, out _))
+            if (!ConverterHelper.GetNumFromStrVector(in readerStr, i, out float y, out _))
             {
                 Debug.WriteLine($"Unable to parse Y value of {readerStr}. Returning default value of (0, 0)");
                 return new Vector2(0, 0);
@@ -56,35 +56,5 @@ namespace AppleSerialization.Converters
         /// <param name="options">The options of the JsonSerializer used</param>
         public override void Write(Utf8JsonWriter writer, Vector2 value, JsonSerializerOptions options) =>
             writer.WriteStringValue($"{value.X} {value.Y}");
-
-        private bool IsNumChar(char c) => c == '.' || char.IsDigit(c);
-
-        private bool GetNumFromStrVector(in string str, int startIndex, out float output, out int endIndex)
-        {
-            //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
-            //values
-            
-            int i = startIndex;
-            StringBuilder strToParse = new();
-
-            bool addToStr = false;
-            for (; i < str.Length; i++)
-            {
-                char c = str[i];
-
-                if (IsNumChar(c))
-                {
-                    addToStr = true;
-                    strToParse.Append(c);
-                }
-                else if (addToStr)
-                {
-                    break;
-                }
-            }
-
-            endIndex = i;
-            return float.TryParse(strToParse.ToString(), out output);
-        }
     }
 }
