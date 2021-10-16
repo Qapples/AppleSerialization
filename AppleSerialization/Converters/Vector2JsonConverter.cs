@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
@@ -32,13 +33,13 @@ namespace AppleSerialization.Converters
 
             //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
             //values
-            if (!GetNumFromStrVector(readerStr, 0, out float x, out int i))
+            if (!GetNumFromStrVector(in readerStr, 0, out float x, out int i))
             {
                 Debug.WriteLine($"Unable to parse X value of {readerStr}. Returning default value of (0, 0)");
                 return new Vector2(0, 0);
             }
 
-            if (!GetNumFromStrVector(readerStr, i, out float y, out _))
+            if (!GetNumFromStrVector(in readerStr, i, out float y, out _))
             {
                 Debug.WriteLine($"Unable to parse Y value of {readerStr}. Returning default value of (0, 0)");
                 return new Vector2(0, 0);
@@ -58,13 +59,13 @@ namespace AppleSerialization.Converters
 
         private bool IsNumChar(char c) => c == '.' || char.IsDigit(c);
 
-        private bool GetNumFromStrVector(string str, int startIndex, out float output, out int endIndex)
+        private bool GetNumFromStrVector(in string str, int startIndex, out float output, out int endIndex)
         {
             //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
             //values
             
             int i = startIndex;
-            string strToParse = "";
+            StringBuilder strToParse = new();
 
             bool addToStr = false;
             for (; i < str.Length; i++)
@@ -74,7 +75,7 @@ namespace AppleSerialization.Converters
                 if (IsNumChar(c))
                 {
                     addToStr = true;
-                    strToParse += c;
+                    strToParse.Append(c);
                 }
                 else if (addToStr)
                 {
@@ -83,7 +84,7 @@ namespace AppleSerialization.Converters
             }
 
             endIndex = i;
-            return float.TryParse(strToParse, out output);
+            return float.TryParse(strToParse.ToString(), out output);
         }
     }
 }
