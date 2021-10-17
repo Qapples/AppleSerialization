@@ -33,19 +33,12 @@ namespace AppleSerialization.Converters
 
             //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
             //values
-            if (!ConverterHelper.GetNumFromStrVector(in readerStr, 0, out float x, out int i))
+            if (!ParseHelper.TryParseVector2(in readerStr, out var result))
             {
-                Debug.WriteLine($"Unable to parse X value of {readerStr}. Returning default value of (0, 0)");
-                return new Vector2(0, 0);
+                return Vector2.Zero;
             }
 
-            if (!ConverterHelper.GetNumFromStrVector(in readerStr, i, out float y, out _))
-            {
-                Debug.WriteLine($"Unable to parse Y value of {readerStr}. Returning default value of (0, 0)");
-                return new Vector2(0, 0);
-            }
-
-            return new Vector2(x, y);
+            return result;
         }
 
         /// <summary>
