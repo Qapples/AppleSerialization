@@ -6,50 +6,104 @@ namespace AppleSerialization
 {
     public static class ParseHelper
     {
-        public static bool IsVectorDigit(char c) => c == '.' || char.IsDigit(c);
-
-        public static bool TryParseVector2(in string s, out Vector2 value)
+        private static bool TryParseVector(in string s, ref Span<float> values)
         {
-            value = Vector2.Zero;
+            int len = values.Length;
 
-            //index of the space
-            int i;
-            for (i = 0; i < s.Length && s[i] != ' '; i++) ;
+            Span<int> indices = stackalloc int[len - 1];
+            for (int i = 0; i < len - 1; i++)
+            {
+                //travel the string until the next space and store the index of that space in c
+                int c;
+                for (c = i == 0 ? 0 : indices[i - 1] + 1; c < s.Length && s[c] != ' '; c++) ;
 
-            if (i == s.Length - 1) return false;
+                //ensure that there are "len" amount of values in the string separated by spaces.
+                if (i != len - 2 && c == s.Length - 2) return false;
 
-            ReadOnlySpan<char> span = s.AsSpan();
-            if (!float.TryParse(span[..i], out float x) || !float.TryParse(span[(i + 1)..], out float y))
+                indices[i] = c;
+            }
+
+            ReadOnlySpan<char> strSpan = s.AsSpan();
+            for (int i = 0; i < len - 1; i++)
+            {
+                int spaceIndex = indices[i];
+
+                if (i == 0)
+                {
+                    if (!float.TryParse(strSpan[..spaceIndex], out float value))
+                    {
+                        return false;
+                    }
+
+                    values[i] = value;
+                }
+                else
+                {
+                    int prevIndex = indices[i - 1];
+                    
+                    if (!float.TryParse(strSpan[(prevIndex + 1)..spaceIndex], out float value))
+                    {
+                        return false;
+                    }
+
+                    values[i] = value;
+                }
+            }
+            
+            //edge case
+            int lastIndex = indices[len - 2];
+
+            if (lastIndex == s.Length) return false;
+
+            if (!float.TryParse(strSpan[(lastIndex + 1)..], out float lastVal))
             {
                 return false;
             }
 
-            value = new Vector2(x, y);
+            values[len - 1] = lastVal;
+
             return true;
         }
 
-        public static bool TryParseVector3(in string s, out Vector3 value)
+        public static bool TryParseVector2(in string s, out Vector2 value)
         {
-            value = Vector3.Zero;
+            Span<float> values = stackalloc float[2];
 
-            //index of the spaces
-            int i, i2;
-
-            for (i = 0; i < s.Length && s[i] != ' '; i++) ;
-            if (i == s.Length - 1) return false;
-
-            for (i2 = i + 1; i2 < s.Length && s[i2] != ' '; i2++) ;
-            if (i2 == s.Length - 1) return false;
-
-            ReadOnlySpan<char> span = s.AsSpan();
-            if (!float.TryParse(span[..i], out float x) ||
-                !float.TryParse(span[(i + 1)..i2], out float y) ||
-                !float.TryParse(span[(i2 + 1)..], out float z))
+            if (!TryParseVector(in s, ref values))
             {
+                value = Vector2.Zero;
                 return false;
             }
 
-            value = new Vector3(x, y, z);
+            value = new Vector2(values[0], values[1]);
+            return true;
+        }
+        
+        public static bool TryParseVector3(in string s, out Vector3 value)
+        {
+            Span<float> values = stackalloc float[3];
+
+            if (!TryParseVector(in s, ref values))
+            {
+                value = Vector3.Zero;
+                return false;
+            }
+
+            value = new Vector3(values[0], values[1], values[2]);
+            return true;
+        }
+        
+        public static bool TryParseVector4(in string s, out Vector4 value)
+        {
+            Span<float> values = stackalloc float[4];
+
+            if (!TryParseVector(in s, ref values))
+            {
+                value = Vector4.Zero;
+                return false;
+            }
+
+            value = new Vector4(values[0], values[1], values[2], values[3]);
             return true;
         }
     }
