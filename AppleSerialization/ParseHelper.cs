@@ -6,7 +6,7 @@ namespace AppleSerialization
 {
     public static class ParseHelper
     {
-        private static bool TryParseVector(in string s, ref Span<float> values)
+        public static bool TryParseVector(in string s, ref Span<float> values)
         {
             int len = values.Length;
 
