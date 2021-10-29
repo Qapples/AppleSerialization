@@ -248,6 +248,8 @@ namespace AppleSerialization.Json
         /// is returned.</returns>
         public JsonObject? FindChild(in string name, in StringComparison comparison = StringComparison.Ordinal)
         {
+            const string methodName = nameof(JsonObject) + "." + nameof(FindChild);
+            
             foreach (JsonObject child in Children)
             {
                 if (string.Equals(name, child.Name, comparison)) return child;
@@ -255,6 +257,8 @@ namespace AppleSerialization.Json
                 JsonObject? returnObj = child.FindChild(in name, in comparison);
                 if (returnObj is not null) return returnObj;
             }
+            
+            Debug.WriteLine($"{methodName}: cannot find child of name {name}!");
 
             return null;
         }
@@ -270,6 +274,8 @@ namespace AppleSerialization.Json
         /// is returned.</returns>
         public JsonProperty? FindProperty(in string name, in StringComparison comparison = StringComparison.Ordinal)
         {
+            const string methodName = nameof(JsonObject) + "." + nameof(FindProperty);
+            
             foreach (JsonProperty property in Properties)
             {
                 if (string.Equals(name, property.Name, comparison)) return property;
@@ -280,6 +286,8 @@ namespace AppleSerialization.Json
                 JsonProperty? returnProp = child.FindProperty(in name, in comparison);
                 if (returnProp is not null) return returnProp;
             }
+            
+            Debug.WriteLine($"{methodName}: cannot find property of name {name}.");
 
             return null;
         }
@@ -295,6 +303,8 @@ namespace AppleSerialization.Json
         /// is returned.</returns>
         public JsonArray? FindArray(in string name, in StringComparison comparison = StringComparison.Ordinal)
         {
+            const string methodName = nameof(JsonObject) + "." + nameof(FindArray);
+            
             foreach (JsonArray array in Arrays)
             {
                 if (string.Equals(name, array.Name, comparison)) return array;
@@ -305,6 +315,8 @@ namespace AppleSerialization.Json
                 JsonArray? returnArr = child.FindArray(in name, in comparison);
                 if (returnArr is not null) return returnArr;
             }
+
+            Debug.WriteLine($"{methodName}: cannot find array of name {name}");
 
             return null;
         }
