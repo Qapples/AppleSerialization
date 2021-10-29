@@ -67,28 +67,6 @@ namespace AppleSerialization.Json
             if (name is null) FindName(name);
         }
 
-        /// <summary>
-        /// Constructs a new <see cref="JsonObject"/> instance based on the data received from a
-        /// <see cref="Utf8JsonReader"/> instance.
-        /// </summary>
-        /// <param name="reader">The <see cref="Utf8JsonReader"/> instance that provides the data necessary to create
-        /// a new <see cref="JsonObject"/> instance. In most cases, the <see cref="Utf8JsonReader"/> is reciving
-        /// data from a file.</param>
-        /// <param name="parent">The parent of this object. If null, then this object does not have a parent.</param>
-        /// <param name="name">If available, this represents the name of the object. Not every object will and can have
-        /// a name (i.e. elements in an array). If this value is not set to, then a name or identifier will attempt to
-        /// be found by finding a value in <see cref="Properties"/> whose name is "id" or "name". If not found, then
-        /// <see cref="Name"/> will be null.</param>
-        public JsonObject(ref Utf8JsonReader reader, string? name = null, JsonObject? parent = null)
-        {
-            JsonObject? jsonObject = CreateFromJsonReader(ref reader);
-            (Name, Parent, Properties, Children, Arrays) = (name, parent,
-                jsonObject?.Properties ?? new List<JsonProperty>(), jsonObject?.Children ?? new List<JsonObject>(),
-                jsonObject?.Arrays ?? new List<JsonArray>());
-
-            if (name is null) FindName(name);
-        }
-
         private void FindName(string? name) =>
             Name = Properties.FirstOrDefault(p => p.Name?.ToLower() is "id" or "name")?.Value as string ?? name;
 
@@ -99,13 +77,15 @@ namespace AppleSerialization.Json
         /// <param name="reader">The <see cref="Utf8JsonReader"/> instance that provides the data necessary to create
         /// a new <see cref="JsonObject"/> instance. In most cases, the <see cref="Utf8JsonReader"/> is receiving
         /// data from a file.</param>
+        /// <param name="parent">The parent of the newly created instance. If null, then the object has no parent. By
+        /// default null.</param>
         /// <returns>A new <see cref="JsonObject"/> object that represents the json data given to by the
         /// <see cref="Utf8JsonReader"/>. If either of the following values are null in <see cref="Environment"/>: <br/>
         /// <see cref="Environment.DefaultFontSystem"/> <br/>
         /// <see cref="Environment.GraphicsDevice"/> <br/>
         /// <see cref="Environment.ContentManager"/> <br/>
         /// OR if there was a parsing error then null is returned along with a debug message.</returns>
-        public static JsonObject? CreateFromJsonReader(ref Utf8JsonReader reader)
+        public static JsonObject? CreateFromJsonReader(ref Utf8JsonReader reader, JsonObject? parent = null)
         {
             const string methodName = nameof(JsonObject) + "." + nameof(CreateFromJsonReader);
             
@@ -143,7 +123,9 @@ namespace AppleSerialization.Json
                     }
                     else if (reader.TokenType == JsonTokenType.StartObject)
                     {
-                        rootObject.Children.Add(new JsonObject(ref reader, propertyName, rootObject));
+                        JsonObject? child = CreateFromJsonReader(ref reader, rootObject);
+                        
+                        if (child is not null) rootObject.Children.Add(child);
                     }
                     else
                     {
@@ -188,7 +170,9 @@ namespace AppleSerialization.Json
                 Debug.WriteLine($"{methodName}: error parsing json with exception and returning null: {e}");
                 return null;
             }
-
+            
+            rootObject.Parent = parent;
+            
             return rootObject;
         }
 
@@ -402,9 +386,9 @@ namespace AppleSerialization.Json
             {
                 while (reader.TokenType != JsonTokenType.EndObject && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    JsonObject newObject = new(ref reader, null, parent);
+                    JsonObject? newObject = CreateFromJsonReader(ref reader, parent);
 
-                    if (newObject.Children.Count > 0 || newObject.Properties.Count > 0)
+                    if (newObject is not null && (newObject.Children.Count > 0 || newObject.Properties.Count > 0))
                     {
                         outputList.Add(newObject);
                     }
