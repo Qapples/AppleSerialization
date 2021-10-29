@@ -63,13 +63,9 @@ namespace AppleSerialization.Json
         {
             (Name, Parent, Properties, Children, Arrays) = (name, parent, properties ?? new List<JsonProperty>(),
                 children ?? new List<JsonObject>(), arrays ?? new List<JsonArray>());
-            
-            if (name is null) FindName(name);
         }
-
-        private void FindName(string? name) =>
-            Name = Properties.FirstOrDefault(p => p.Name?.ToLower() is "id" or "name")?.Value as string ?? name;
-
+        
+        
         /// <summary>
         /// Creates a new <see cref="JsonObject"/> instance based on the data received from a
         /// <see cref="Utf8JsonReader"/> instance.
@@ -102,7 +98,7 @@ namespace AppleSerialization.Json
                 return null;
             }
 
-            JsonObject rootObject = new();
+            JsonObject rootObject = new() {Parent = parent};
 
             try
             {
@@ -125,7 +121,11 @@ namespace AppleSerialization.Json
                     {
                         JsonObject? child = CreateFromJsonReader(ref reader, rootObject);
                         
-                        if (child is not null) rootObject.Children.Add(child);
+                        if (child is not null)
+                        {
+                            child.Name = propertyName;
+                            rootObject.Children.Add(child);
+                        }
                     }
                     else
                     {
@@ -171,11 +171,19 @@ namespace AppleSerialization.Json
                 return null;
             }
             
-            rootObject.Parent = parent;
+            //sometimes objects will have an "id" or "name" property. if the object doesn't already have a name, find
+            //that property so we can give it a name.
+            if (rootObject.Name is null && rootObject.Properties.Count > 0)
+            {
+                rootObject.Name = rootObject.FindName();
+            }
             
             return rootObject;
         }
 
+        private string? FindName() =>
+            Properties.FirstOrDefault(p => p.Name?.ToLower() is "id" or "name")?.Value as string;
+        
         private static readonly JsonWriterOptions DefaultWriterOptions = new() {Indented = true};
 
         /// <summary>
