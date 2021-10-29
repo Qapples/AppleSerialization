@@ -100,71 +100,95 @@ namespace AppleSerialization.Json
         /// a new <see cref="JsonObject"/> instance. In most cases, the <see cref="Utf8JsonReader"/> is receiving
         /// data from a file.</param>
         /// <returns>A new <see cref="JsonObject"/> object that represents the json data given to by the
-        /// <see cref="Utf8JsonReader"/>.</returns>
+        /// <see cref="Utf8JsonReader"/>. If either of the following values are null in <see cref="Environment"/>: <br/>
+        /// <see cref="Environment.DefaultFontSystem"/> <br/>
+        /// <see cref="Environment.GraphicsDevice"/> <br/>
+        /// <see cref="Environment.ContentManager"/> <br/>
+        /// OR if there was a parsing error then null is returned along with a debug message.</returns>
         public static JsonObject? CreateFromJsonReader(ref Utf8JsonReader reader)
         {
+            const string methodName = nameof(JsonObject) + "." + nameof(CreateFromJsonReader);
+            
             //Ensure that the proper variables were set to in Environment
             if (Environment.DefaultFontSystem is null || Environment.GraphicsDevice is null ||
                 Environment.ContentManager is null)
             {
-                Debug.WriteLine("One or more of the environment variables are null: " +
+                Debug.WriteLine($"{methodName}: One or more of the environment variables are null: " +
                                 $"\nDefaultFontSystem: {(Environment.DefaultFontSystem is null ? "null" : "not null")} " +
                                 $"\nGraphicsDevice: {(Environment.GraphicsDevice is null ? "null" : "not null")} " +
-                                $"\nContentManager: {(Environment.ContentManager is null ? "null" : "not null")}");
+                                $"\nContentManager: {(Environment.ContentManager is null ? "null" : "not null")}" +
+                                "\n null returned.");
         
                 return null;
             }
 
             JsonObject rootObject = new();
-            
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+
+            try
             {
-                if (reader.TokenType != JsonTokenType.PropertyName) continue;
-        
-                string propertyName = reader.GetString()!; //PropertyNames will always be a string
-                if (!reader.Read()) break; //skip to next node
-        
-                if (reader.TokenType == JsonTokenType.StartArray)
+                while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    //TODO: If jsonArray is null, then undefined behavior could come up. Be careful!
-                    JsonArray? jsonArray = GetObjectArray(ref reader, propertyName, rootObject);
-                    if (jsonArray is null) break;
+                    if (reader.TokenType != JsonTokenType.PropertyName) continue;
 
-                    rootObject.Arrays.Add(jsonArray);
-                }
-                else if (reader.TokenType == JsonTokenType.StartObject)
-                {
-                    rootObject.Children.Add(new JsonObject(ref reader, propertyName, rootObject));
-                }
-                else
-                {
-                    string lowerPropertyName = propertyName.ToLower();
+                    string propertyName = reader.GetString()!; //PropertyNames will always be a string
+                    if (!reader.Read()) break; //skip to next node
 
-                    object? parameterValue = null;
-                    JsonValueKind valueKind = JsonValueKind.Null;
-                    switch (reader.TokenType)
+                    if (reader.TokenType == JsonTokenType.StartArray)
                     {
-                        // ReSharper disable MultipleStatementsOnOneLine
-                        case JsonTokenType.True: 
-                            parameterValue = true; valueKind = JsonValueKind.True; break;
-                        case JsonTokenType.False: 
-                            parameterValue = false; valueKind = JsonValueKind.False; break;
-                        case JsonTokenType.String: 
-                            parameterValue = reader.GetString(); valueKind = JsonValueKind.String; break;
-                        case JsonTokenType.Number:
-                            parameterValue = GetNumber(ref reader); valueKind = JsonValueKind.Number; break;
-                        // ReSharper enable MultipleStatementsOnOneLine
-                    }
+                        //TODO: If jsonArray is null, then undefined behavior could come up. Be careful!
+                        JsonArray? jsonArray = GetObjectArray(ref reader, propertyName, rootObject);
+                        if (jsonArray is null) break;
 
-                    if (lowerPropertyName is "size" or "scale" && parameterValue is not null)
-                    {
-                        Environment.CurrentDeserializingObjectSize = (Vector2) parameterValue;
+                        rootObject.Arrays.Add(jsonArray);
                     }
-        
-                    rootObject.Properties.Add(new JsonProperty(propertyName, parameterValue, rootObject, valueKind));
+                    else if (reader.TokenType == JsonTokenType.StartObject)
+                    {
+                        rootObject.Children.Add(new JsonObject(ref reader, propertyName, rootObject));
+                    }
+                    else
+                    {
+                        string lowerPropertyName = propertyName.ToLower();
+
+                        object? parameterValue = null;
+                        JsonValueKind valueKind = JsonValueKind.Null;
+                        switch (reader.TokenType)
+                        {
+                            // ReSharper disable MultipleStatementsOnOneLine
+                            case JsonTokenType.True:
+                                parameterValue = true;
+                                valueKind = JsonValueKind.True;
+                                break;
+                            case JsonTokenType.False:
+                                parameterValue = false;
+                                valueKind = JsonValueKind.False;
+                                break;
+                            case JsonTokenType.String:
+                                parameterValue = reader.GetString();
+                                valueKind = JsonValueKind.String;
+                                break;
+                            case JsonTokenType.Number:
+                                parameterValue = GetNumber(ref reader);
+                                valueKind = JsonValueKind.Number;
+                                break;
+                            // ReSharper enable MultipleStatementsOnOneLine
+                        }
+
+                        if (lowerPropertyName is "size" or "scale" && parameterValue is not null)
+                        {
+                            Environment.CurrentDeserializingObjectSize = (Vector2) parameterValue;
+                        }
+
+                        rootObject.Properties.Add(new JsonProperty(propertyName, parameterValue, rootObject,
+                            valueKind));
+                    }
                 }
             }
-        
+            catch (JsonException e)
+            {
+                Debug.WriteLine($"{methodName}: error parsing json with exception and returning null: {e}");
+                return null;
+            }
+
             return rootObject;
         }
 
