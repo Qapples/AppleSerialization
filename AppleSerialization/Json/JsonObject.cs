@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using DefaultEcs;
 using Microsoft.Xna.Framework;
 
 namespace AppleSerialization.Json
@@ -65,8 +64,14 @@ namespace AppleSerialization.Json
                 children ?? new List<JsonObject>(), arrays ?? new List<JsonArray>());
         }
 
+        /// <summary>
+        /// Default constructor that creates a blank <see cref="JsonObject"/> instance via calling
+        /// <see cref="JsonObject(string?, JsonObject?, IList{JsonProperty}?, IList{JsonObject}?, IList{JsonArray}?)"/>
+        /// </summary>
         public JsonObject() : this(null, null, null, null, null)
         {
+            //We have a default constructor here in the case that we want to call the other constructor with all null
+            //values via reflection more simply and easily.
         }
         
         

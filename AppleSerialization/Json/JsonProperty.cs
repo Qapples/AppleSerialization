@@ -1,6 +1,6 @@
 using System;
-using System.Text.Json;
 using FastDeepCloner;
+using JsonValueKind = System.Text.Json.JsonValueKind;
 
 namespace AppleSerialization.Json
 {
@@ -42,11 +42,17 @@ namespace AppleSerialization.Json
         /// <param name="valueKind">Represents the the type of value that this object represents. If not set to, the
         /// default value is <see cref="JsonValueKind.Null"/>.</param>
         public JsonProperty(string? name = null, object? value = null, JsonObject? parent = null,
-            in JsonValueKind valueKind = JsonValueKind.Null) =>
+            JsonValueKind valueKind = JsonValueKind.Null) =>
             (Name, Value, Parent, ValueKind) = (name, value, parent, valueKind);
 
+        /// <summary>
+        /// Default constructor that creates a blank <see cref="JsonProperty"/> instance via calling
+        /// <see cref="JsonProperty(string?, object?, JsonObject?, JsonValueKind)"/>
+        /// </summary>
         public JsonProperty() : this(null, null, null, JsonValueKind.Null)
         {
+            //We have a default constructor here in the case that we want to call the other constructor with all null
+            //values via reflection more simply and easily.
         }
 
         /// <summary>

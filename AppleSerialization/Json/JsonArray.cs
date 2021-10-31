@@ -39,8 +39,14 @@ namespace AppleSerialization.Json
         public JsonArray(string? name = null, JsonObject? parent = null, IList<JsonObject>? objects = null) =>
             (Name, Parent, Objects) = (name, parent, objects ?? new List<JsonObject>());
 
+        /// <summary>
+        /// Default constructor that creates a blank <see cref="JsonArray"/> instance via calling
+        /// <see cref="JsonArray(string?, JsonObject?, IList{JsonObject}?)"/>.
+        /// </summary>
         public JsonArray() : this(null, null, null)
         {
+            //We have a default constructor here in the case that we want to call the other constructor with all null
+            //values via reflection more simply and easily.
         }
 
         /// <summary>
