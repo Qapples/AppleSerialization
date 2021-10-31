@@ -45,6 +45,10 @@ namespace AppleSerialization.Json
             in JsonValueKind valueKind = JsonValueKind.Null) =>
             (Name, Value, Parent, ValueKind) = (name, value, parent, valueKind);
 
+        public JsonProperty() : this(null, null, null, JsonValueKind.Null)
+        {
+        }
+
         /// <summary>
         /// Creates a deep clone of this <see cref="JsonProperty"/> instance along with a deep clone of
         /// <see cref="Value"/>. If <see cref="Value"/> does not implement <see cref="ICloneable"/> then

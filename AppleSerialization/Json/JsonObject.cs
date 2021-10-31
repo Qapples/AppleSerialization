@@ -64,6 +64,10 @@ namespace AppleSerialization.Json
             (Name, Parent, Properties, Children, Arrays) = (name, parent, properties ?? new List<JsonProperty>(),
                 children ?? new List<JsonObject>(), arrays ?? new List<JsonArray>());
         }
+
+        public JsonObject() : this(null, null, null, null, null)
+        {
+        }
         
         
         /// <summary>

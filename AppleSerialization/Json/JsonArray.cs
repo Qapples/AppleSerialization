@@ -39,6 +39,10 @@ namespace AppleSerialization.Json
         public JsonArray(string? name = null, JsonObject? parent = null, IList<JsonObject>? objects = null) =>
             (Name, Parent, Objects) = (name, parent, objects ?? new List<JsonObject>());
 
+        public JsonArray() : this(null, null, null)
+        {
+        }
+
         /// <summary>
         /// Creates a deep copy of this <see cref="JsonArray"/> instance. All elements in <see cref="Objects"/> are
         /// also copied.
