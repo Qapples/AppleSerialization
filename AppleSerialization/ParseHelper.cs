@@ -6,7 +6,7 @@ namespace AppleSerialization
 {
     public static class ParseHelper
     {
-        public static bool TryParseVector(in string s, ref Span<float> values)
+        public static bool TryParseVector(string s, ref Span<float> values)
         {
             int len = values.Length;
 
@@ -65,11 +65,11 @@ namespace AppleSerialization
             return true;
         }
 
-        public static bool TryParseVector2(in string s, out Vector2 value)
+        public static bool TryParseVector2(string s, out Vector2 value)
         {
             Span<float> values = stackalloc float[2];
 
-            if (!TryParseVector(in s, ref values))
+            if (!TryParseVector(s, ref values))
             {
                 value = Vector2.Zero;
                 return false;
@@ -79,11 +79,11 @@ namespace AppleSerialization
             return true;
         }
         
-        public static bool TryParseVector3(in string s, out Vector3 value)
+        public static bool TryParseVector3(string s, out Vector3 value)
         {
             Span<float> values = stackalloc float[3];
 
-            if (!TryParseVector(in s, ref values))
+            if (!TryParseVector(s, ref values))
             {
                 value = Vector3.Zero;
                 return false;
@@ -93,11 +93,11 @@ namespace AppleSerialization
             return true;
         }
         
-        public static bool TryParseVector4(in string s, out Vector4 value)
+        public static bool TryParseVector4(string s, out Vector4 value)
         {
             Span<float> values = stackalloc float[4];
 
-            if (!TryParseVector(in s, ref values))
+            if (!TryParseVector(s, ref values))
             {
                 value = Vector4.Zero;
                 return false;

@@ -53,7 +53,7 @@ namespace AppleSerialization.Converters
                 Color paramColor = textureColor.Value;
 
                 //TextureFromColor is not case-sensitive, so we don't need to do anything extra to the string value
-                return TextureHelper.CreateTextureFromColor(Environment.GraphicsDevice, in paramColor, width, height);
+                return TextureHelper.CreateTextureFromColor(Environment.GraphicsDevice, paramColor, width, height);
             }
 
             //the string value is not a color, so intercept it as a name to a Texture2D existing within the content

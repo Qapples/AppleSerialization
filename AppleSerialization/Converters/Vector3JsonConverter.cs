@@ -21,7 +21,7 @@ namespace AppleSerialization.Converters
 
             //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
             //values
-            if (!ParseHelper.TryParseVector3(in readerStr, out Vector3 value))
+            if (!ParseHelper.TryParseVector3(readerStr, out Vector3 value))
             {
                 Debug.WriteLine($"{methodName}: cannot parse vector3 value! Using default value of (0, 0, 0)");
                 return Vector3.Zero;

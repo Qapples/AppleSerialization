@@ -116,7 +116,7 @@ namespace AppleSerialization
         /// <exception cref="NotImplementedException">This exception is thrown when this type does not override
         /// <see cref="Serialize"/>.</exception>
         /// <returns>A a string value that is representative of the object in json format.</returns>
-        public virtual string Serialize(in JsonWriterOptions? options = null)
+        public virtual string Serialize(JsonWriterOptions? options = null)
         {
             throw new NotImplementedException($"{typeof(T)} does not implement Serialize()!");
         }

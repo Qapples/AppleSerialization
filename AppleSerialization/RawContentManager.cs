@@ -204,7 +204,7 @@ namespace AppleSerialization
         /// <param name="name">Optional name of the data. If null/not set to, then the name will be given a numerical
         /// identifier instead.</param>
         /// <typeparam name="T">The type of the data.</typeparam>
-        public void Add<T>(in T data, string? name = null) where T : IDisposable
+        public void Add<T>(T data, string? name = null) where T : IDisposable
         {
             _loadedAssets.Add(name ?? _loadedAssets.Count.ToString(), data);
             _disposables.Add(data);

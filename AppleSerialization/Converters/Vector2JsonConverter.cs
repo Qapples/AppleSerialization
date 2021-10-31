@@ -33,7 +33,7 @@ namespace AppleSerialization.Converters
 
             //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
             //values
-            if (!ParseHelper.TryParseVector2(in readerStr, out var result))
+            if (!ParseHelper.TryParseVector2(readerStr, out var result))
             {
                 return Vector2.Zero;
             }

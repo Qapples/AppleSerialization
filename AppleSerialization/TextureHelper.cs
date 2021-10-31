@@ -16,7 +16,7 @@ namespace AppleSerialization
         /// <param name="width">Width of the texture</param>
         /// <param name="height">Height of the texture</param>
         /// <returns>A Texture2D object of width x height dimensions that is a rectangle of a homogenous color</returns>
-        public static Texture2D CreateTextureFromColor(GraphicsDevice graphicsDevice, in Color color, int width, int height)
+        public static Texture2D CreateTextureFromColor(GraphicsDevice graphicsDevice, Color color, int width, int height)
         {
             Texture2D outTexture = new(graphicsDevice, width, height);
              

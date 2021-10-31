@@ -203,7 +203,7 @@ namespace AppleSerialization.Json
         /// generated.</param>
         /// <returns>A string value that represents this <see cref="JsonObject"/> and it's children, properties, and
         /// arrays in json format.</returns>
-        public string GenerateJsonText(in JsonWriterOptions? options = null)
+        public string GenerateJsonText(JsonWriterOptions? options = null)
         {
             using MemoryStream ms = new();
 
@@ -222,7 +222,7 @@ namespace AppleSerialization.Json
         /// written to. If null, then <see cref="DefaultWriterOptions"/> is used.</param>
         /// <returns>If writing to the file was successful, then true is returned. Otherwise, false is returned and a
         /// message is written to the debugger explaining what went wrong.</returns>
-        public bool TryWriteToFile(string filePath, in JsonWriterOptions? options = null)
+        public bool TryWriteToFile(string filePath, JsonWriterOptions? options = null)
         {
             try
             {
@@ -255,7 +255,7 @@ namespace AppleSerialization.Json
         /// compared. By default, it is <see cref="StringComparison.Ordinal"/></param>
         /// <returns>If found, then the <see cref="JsonObject"/> with the specified name is returned. Otherwise, null
         /// is returned.</returns>
-        public JsonObject? FindChild(in string name, in StringComparison comparison = StringComparison.Ordinal)
+        public JsonObject? FindChild(string name, StringComparison comparison = StringComparison.Ordinal)
         {
             const string methodName = nameof(JsonObject) + "." + nameof(FindChild);
             
@@ -263,7 +263,7 @@ namespace AppleSerialization.Json
             {
                 if (string.Equals(name, child.Name, comparison)) return child;
 
-                JsonObject? returnObj = child.FindChild(in name, in comparison);
+                JsonObject? returnObj = child.FindChild(name, comparison);
                 if (returnObj is not null) return returnObj;
             }
             
@@ -281,7 +281,7 @@ namespace AppleSerialization.Json
         /// compared. By default, it is <see cref="StringComparison.Ordinal"/></param>
         /// <returns>If found, then the <see cref="JsonProperty"/> with the specified name is returned. Otherwise, null
         /// is returned.</returns>
-        public JsonProperty? FindProperty(in string name, in StringComparison comparison = StringComparison.Ordinal)
+        public JsonProperty? FindProperty(string name, StringComparison comparison = StringComparison.Ordinal)
         {
             const string methodName = nameof(JsonObject) + "." + nameof(FindProperty);
             
@@ -292,7 +292,7 @@ namespace AppleSerialization.Json
 
             foreach (JsonObject child in Children)
             {
-                JsonProperty? returnProp = child.FindProperty(in name, in comparison);
+                JsonProperty? returnProp = child.FindProperty(name, comparison);
                 if (returnProp is not null) return returnProp;
             }
             
@@ -310,7 +310,7 @@ namespace AppleSerialization.Json
         /// compared. By default, it is <see cref="StringComparison.Ordinal"/></param>
         /// <returns>If found, then the <see cref="JsonArray"/> with the specified name is returned. Otherwise, null
         /// is returned.</returns>
-        public JsonArray? FindArray(in string name, in StringComparison comparison = StringComparison.Ordinal)
+        public JsonArray? FindArray(string name, StringComparison comparison = StringComparison.Ordinal)
         {
             const string methodName = nameof(JsonObject) + "." + nameof(FindArray);
             
@@ -321,7 +321,7 @@ namespace AppleSerialization.Json
 
             foreach (JsonObject child in Children)
             {
-                JsonArray? returnArr = child.FindArray(in name, in comparison);
+                JsonArray? returnArr = child.FindArray(name, comparison);
                 if (returnArr is not null) return returnArr;
             }
 
