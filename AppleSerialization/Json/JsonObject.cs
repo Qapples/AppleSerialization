@@ -164,9 +164,14 @@ namespace AppleSerialization.Json
                             // ReSharper enable MultipleStatementsOnOneLine
                         }
 
-                        if (lowerPropertyName is "size" or "scale" && parameterValue is not null)
+                        //this is here in the instance where we are handling UI and we need to know the size before
+                        //generating textures on the spot i.e. when a texture is not found and a replacement is needed.
+                        //this is a pretty hacky solution. it works, I guess...
+                        //TODO: find a better solution to handling size/scale for UI during serialization.
+                        if (lowerPropertyName is "size" or "scale" && parameterValue is string s &&
+                            ParseHelper.TryParseVector2(s, out var value))
                         {
-                            Environment.CurrentDeserializingObjectSize = (Vector2) parameterValue;
+                            Environment.CurrentDeserializingObjectSize = value;
                         }
 
                         rootObject.Properties.Add(new JsonProperty(propertyName, parameterValue, rootObject,
