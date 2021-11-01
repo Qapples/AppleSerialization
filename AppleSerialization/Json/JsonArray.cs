@@ -8,7 +8,7 @@ namespace AppleSerialization.Json
     /// <summary>
     /// Represents an array of <see cref="JsonObject"/> instances.
     /// </summary>
-    public class JsonArray : ICollection<JsonObject>, IName, ICloneable
+    public class JsonArray : IList<JsonObject>, IName, ICloneable
     {
         /// <summary>
         /// Name/Identifier of the array. Not all instances will have one.
@@ -72,10 +72,16 @@ namespace AppleSerialization.Json
 
         public bool Remove(JsonObject item) => Objects.Remove(item);
 
-        public int Count => Objects.Count;
-        
-        public bool IsReadOnly => Objects.IsReadOnly;
+        public int IndexOf(JsonObject item) => Objects.IndexOf(item);
 
+        public void Insert(int index, JsonObject item) => Objects.Insert(index, item);
+
+        public void RemoveAt(int index) => Objects.RemoveAt(index);
+
+        public int Count => Objects.Count;
+
+        public bool IsReadOnly => Objects.IsReadOnly;
+        
         public JsonObject this[int i]
         {
             get => Objects[i];
