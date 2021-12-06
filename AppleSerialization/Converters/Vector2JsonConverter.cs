@@ -37,7 +37,7 @@ namespace AppleSerialization.Converters
             {
                 return Vector2.Zero;
             }
-
+            
             return result;
         }
 

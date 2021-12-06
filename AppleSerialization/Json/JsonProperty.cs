@@ -70,8 +70,8 @@ namespace AppleSerialization.Json
                 return new JsonProperty(Name, Value is null ? null : cloneable.Clone(), Parent, ValueKind);
             }
 
-            JsonProperty thisClone = this.Clone<JsonProperty>();
-            return new JsonProperty(Name, Value is null ? null : thisClone, Parent, ValueKind);
+            object valueClone = Value.Clone();
+            return new JsonProperty(Name, Value is null ? null : valueClone, Parent, ValueKind);
         }
     }
 }
