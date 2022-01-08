@@ -26,7 +26,8 @@ namespace AppleSerialization
             {typeof(FontSystem), typeof(FontSystemJsonConverter)},
             {typeof(Texture2D), typeof(Texture2DJsonConverter)},
             {typeof(Vector2), typeof(Vector2JsonConverter)},
-            {typeof(Vector3), typeof(Vector3JsonConverter)}
+            {typeof(Vector3), typeof(Vector3JsonConverter)},
+            {typeof(Rectangle), typeof(RectangleJsonConverter)}
         };
 
         /// <summary>
