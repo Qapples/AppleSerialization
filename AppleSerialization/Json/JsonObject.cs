@@ -362,23 +362,7 @@ namespace AppleSerialization.Json
         private void WriteToJson(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            
-            //arrays
-            foreach (JsonArray arr in Arrays)
-            {
-                if (arr.Name is not null) writer.WritePropertyName(arr.Name);
-                writer.WriteStartArray();
-                
-                foreach (JsonObject arrObj in arr.Objects)
-                {
-                    //Debug.WriteLine(arrObj.Properties.First().Value);
-                    if (arrObj.Name is not null) writer.WritePropertyName(arrObj.Name);
-                    arrObj.WriteToJson(writer);
-                }
-                
-                writer.WriteEndArray();
-            }
-            
+
             //properties
             foreach (JsonProperty prop in Properties)
             {
@@ -390,6 +374,20 @@ namespace AppleSerialization.Json
             {
                 if (child.Name is not null) writer.WritePropertyName(child.Name);
                 child.WriteToJson(writer);
+            }
+            
+            //arrays
+            foreach (JsonArray arr in Arrays)
+            {
+                if (arr.Name is not null) writer.WritePropertyName(arr.Name);
+                writer.WriteStartArray();
+                
+                foreach (JsonObject arrObj in arr.Objects)
+                {
+                    arrObj.WriteToJson(writer);
+                }
+                
+                writer.WriteEndArray();
             }
 
             writer.WriteEndObject();
