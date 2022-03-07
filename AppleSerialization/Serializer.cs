@@ -44,7 +44,7 @@ namespace AppleSerialization
                 object? a = null;
                 return (T?) a;
             }
-
+            
             //this is a bit complicated, but what we are doing here is that we are using the constructor marked with
             //the JsonSerializer attribute to create an instance of T. 
             ConstructorInfo jsonConstructor = (from elm in typeof(T).GetConstructors()

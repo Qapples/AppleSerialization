@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -299,6 +300,14 @@ namespace AppleSerialization
         /// the deserialization was unsuccessful</returns>
         public static object? GetObjectFromReader(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
+            //If the given type does not (or cannot) have a valid JsonConstructor, then see if the object we are going
+            //to deserialize has one.
+            if (type == typeof(object) || type.IsInterface || type.IsAbstract || type.GetConstructors()
+                .Any(c => c.GetCustomAttributes(true).Any(a => a is JsonConstructorAttribute)))
+            {
+                type = GetTypeFromObject(ref reader) ?? type;
+            }
+
             Type deserializeHelperType =
                 typeof(DeserializeHelper<>).MakeGenericType(Nullable.GetUnderlyingType(type) ?? type);
 
@@ -371,8 +380,9 @@ namespace AppleSerialization
                 JsonSerializerOptions options)
             {
                 if (_deserializeDelegate is null) return null;
+                
 
-                return _deserializeDelegate.Invoke(ref reader, options);
+                return (T?) _deserializeDelegate.Invoke(ref reader, options);
             }
         }
     }

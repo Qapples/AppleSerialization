@@ -17,18 +17,22 @@ namespace AppleSerialization.Converters
             const string methodName = nameof(RectangleJsonConverter) + "." + nameof(Read);
 #endif
             //first value is x, second value is y, third value is width, and last value is height.
-            
+
             string? readerStr = reader.GetString();
             if (readerStr is null)
             {
+#if DEBUG
                 Debug.WriteLine($"{methodName}: unable to read Rectangle value. Using default rectangle, which " +
                                 "is all zeros.");
+#endif
                 return new Rectangle(0, 0, 0, 0);
             }
 
             if (!ParseHelper.TryParseVector4(readerStr, out Vector4 value))
             {
+#if DEBUG
                 Debug.WriteLine($"{methodName}: unable to parse line ({readerStr}) as Vector4.");
+#endif
                 return new Rectangle(0, 0, 0, 0);
             }
 
