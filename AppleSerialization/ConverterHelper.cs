@@ -11,6 +11,7 @@ using AppleSerialization.Json;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using JsonProperty = AppleSerialization.Json.JsonProperty;
 
 namespace AppleSerialization
 {
@@ -261,6 +262,26 @@ namespace AppleSerialization
         }
 
         /// <summary>
+        /// Tries to get a type associated with an object by trying to find a type through it's type identifier
+        /// property.
+        /// </summary>
+        /// <param name="obj">The <see cref="JsonObject"/> to find the type of</param>
+        /// <returns>If a type was found for the provided object, then a <see cref="Type"/> is returned. Otherwise,
+        /// null is returned.</returns>
+        public static Type? GetTypeFromObject(JsonObject obj)
+        {
+            foreach (JsonProperty prop in obj.Properties)
+            {
+                if (prop.Name == Environment.TypeIdentifier && prop.Value is string typeName)
+                {
+                    return GetTypeFromString(typeName);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Attempts to obtain a type from name.
         /// </summary>
         /// <remarks>External types must be added to <see cref="Environment.ExternalTypes"/>. Otherwise, the external
@@ -303,7 +324,7 @@ namespace AppleSerialization
         {
             //If the given type does not (or cannot) have a valid JsonConstructor, then see if the object we are going
             //to deserialize has one.
-            if (type.IsTypeJsonSerializable())
+            if (!type.IsTypeJsonSerializable())
             {
                 type = GetTypeFromObjectReader(ref reader) ?? type;
             }
