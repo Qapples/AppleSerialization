@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using AppleSerialization.Converters;
 using AppleSerialization.Info;
+using AppleSerialization.Json;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -153,7 +154,7 @@ namespace AppleSerialization
 
             while (reader.TokenType != JsonTokenType.EndArray)
             {
-                Type? valueType = GetTypeFromObject(ref reader);
+                Type? valueType = GetTypeFromObjectReader(ref reader);
                 if (valueType is null)
                 {
                     Debug.WriteLine($"Type is null (GetArrayFromReader). Skipping object ...");
@@ -228,7 +229,7 @@ namespace AppleSerialization
         /// Finds the property with a name of <see cref="Environment.TypeIdentifier"/> in a Json object and returns the
         /// corresponding type. Returns null if not found.
         /// </summary>
-        private static Type? GetTypeFromObject(ref Utf8JsonReader reader)
+        private static Type? GetTypeFromObjectReader(ref Utf8JsonReader reader)
         {
             string typeIdentifier = Environment.TypeIdentifier;
             
@@ -241,7 +242,7 @@ namespace AppleSerialization
             if (reader.TokenType == JsonTokenType.EndObject)
             {
                 Debug.WriteLine($"type specifier was not found in the object and the type could not be " +
-                                $"determined!. GetTypeFromObject (private) returning null.");
+                                $"determined!. GetTypeFromObjectReader (private) returning null.");
 
                 return null;
             }
@@ -251,7 +252,7 @@ namespace AppleSerialization
             string? typeStr = reader.GetString();
             if (typeStr is null)
             {
-                Debug.WriteLine($"{nameof(ConverterHelper)}.{nameof(GetTypeFromObject)}: cannot get the type! " +
+                Debug.WriteLine($"{nameof(ConverterHelper)}.{nameof(GetTypeFromObjectReader)}: cannot get the type! " +
                                 $"Returning null.");
                 return null;
             }
@@ -302,10 +303,9 @@ namespace AppleSerialization
         {
             //If the given type does not (or cannot) have a valid JsonConstructor, then see if the object we are going
             //to deserialize has one.
-            if (type == typeof(object) || type.IsInterface || type.IsAbstract || type.GetConstructors()
-                .Any(c => c.GetCustomAttributes(true).Any(a => a is JsonConstructorAttribute)))
+            if (type.IsTypeJsonSerializable())
             {
-                type = GetTypeFromObject(ref reader) ?? type;
+                type = GetTypeFromObjectReader(ref reader) ?? type;
             }
 
             Type deserializeHelperType =
@@ -319,6 +319,15 @@ namespace AppleSerialization
             return null;
         }
 
+        /// <summary>
+        /// Determines if a <see cref="Type"/> is able to be Json serialized.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns>If a type is neither an object, nor an interface, nor an abstract class, then it is Json
+        /// serializable and therefore this method returns true. Otherwise, false</returns>
+        public static bool IsTypeJsonSerializable(this Type type) =>
+            !(type == typeof(object) || type.IsInterface || type.IsAbstract);
+        
         //we can't pass values by reference using reflection, so we use this hacky solution to do so
         //(https://stackoverflow.com/questions/60830084/how-to-pass-an-argument-by-reference-using-reflection)
 
