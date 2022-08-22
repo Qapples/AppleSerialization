@@ -159,20 +159,10 @@ namespace AppleSerialization
             //assetPath is where the content is relative to the Directory property
             string[] assetPaths = assetLocations.Select(e => Path.Combine(Directory, e)).ToArray();
 
-            switch (typeof(T))
+            switch (instance)
             {
-                case
-                    var type when type == typeof(FontSystem):
+                case FontSystem fontSystem:
                 {
-                    //Instance can be null regardless if it is marked as nullable or not. It is marked as nullable
-                    //as to let the compiler know that it can be null
-                    if (instance is null)
-                    {
-                        Debug.WriteLine("The instance parameter cannot be null in LoadFactory. Returning null.");
-                        return null;
-                    }
-
-                    FontSystem fontSystem = (instance as FontSystem)!;
                     foreach (string path in assetPaths)
                     {
                         try

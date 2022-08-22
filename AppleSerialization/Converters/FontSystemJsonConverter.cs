@@ -37,7 +37,7 @@ namespace AppleSerialization.Converters
                     FontSystem? outSystem =
                         fontName is not null
                             ? Environment.ContentManager.LoadFactory(new[] {fontName},
-                                FontSystemFactory.Create(Environment.GraphicsDevice), fontName)
+                                new FontSystem(), fontName)
                             : null;
 
                     //a little bit difficult to read here but all we are doing is that we are accounting for the
@@ -70,7 +70,7 @@ namespace AppleSerialization.Converters
 
                 string name = (string) objPaths[0]!;
                 FontSystem? output = Environment.ContentManager.LoadFactory(paths.ToArray(),
-                    FontSystemFactory.Create(Environment.GraphicsDevice), name);
+                    new FontSystem(), name);
                 if (output is null)
                 {
                     Debug.WriteLine($"Error generating FontSystem of name {name}. Returning " +
