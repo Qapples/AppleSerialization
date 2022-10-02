@@ -85,25 +85,6 @@ namespace AppleSerialization
         //---------------------
 
         /// <summary>
-        /// Returns the full path of a <see cref="ContentPath"/> instance. If <see cref="ContentPath.IsContentPath"/>
-        /// is true, then <see cref="ContentPath.Path"/> is combined with <see cref="RawContentManager.Directory"/>.
-        /// </summary>
-        /// <param name="path">The <see cref="ContentPath"/> instance to get the path from.</param>
-        /// <returns>If <see cref="ContentPath.IsContentPath"/> is true and <see cref="RawContentManager"/> is null,
-        /// then null is returned. Otherwise, a value is returned.</returns>
-        public static string? GetFullPath(this in ContentPath path)
-        {
-            if (path.IsContentPath)
-            {
-                return ContentManager is not null
-                    ? Path.GetFullPath(Path.Combine(ContentManager.Directory, path.Path))
-                    : null;
-            }
-
-            return Path.GetFullPath(path.Path);
-        }
-
-        /// <summary>
         /// Parses the contents of a file detailing alternative aliases for types that will be present when loading
         /// entity files. The aliases can be found in the <see cref="TypeAliases"/> instance.
         /// </summary>
