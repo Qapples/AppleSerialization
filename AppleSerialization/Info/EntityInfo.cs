@@ -6,7 +6,7 @@ namespace AppleSerialization.Info
     /// <summary>
     /// Describes the data needed for creating entities.
     /// </summary>
-    public class EntityInfo : Serializer<EntityInfo>
+    public class EntityInfo
     {
         /// <summary>
         /// The ID of an <see cref="Entity"/> when it's created through <see cref="CreateEntity"/>.

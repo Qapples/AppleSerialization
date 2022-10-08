@@ -403,7 +403,7 @@ namespace AppleSerialization
 
             public DeserializeHelper()
             {
-                _deserializeDelegate = Serializer<T>.Deserialize;
+                _deserializeDelegate = Serializer.Deserialize<T>;
             }
 
             public override object? Deserialize(ref Utf8JsonReader reader,

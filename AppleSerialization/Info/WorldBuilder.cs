@@ -69,8 +69,8 @@ namespace AppleSerialization.Info
             {
                 Utf8JsonReader reader =
                     new(Encoding.UTF8.GetBytes(contents), jsonReaderOptions ?? _defaultJsonReaderOptions);
-
-                EntityInfo? entityInfo = EntityInfo.Deserialize(ref reader,
+                
+                EntityInfo? entityInfo = Serializer.Deserialize<EntityInfo>(ref reader,
                     jsonSerializerOptions ?? _defaultJsonSerializationOptions);
                 if (entityInfo is not null) Entities.Add(entityInfo);
             }

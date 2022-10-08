@@ -14,8 +14,7 @@ namespace AppleSerialization
     /// to the type of the generic/subclass. Also provides a method signature for serialization, which throws an
     /// exception by default
     /// </summary>
-    /// <typeparam name="T">Type of object that is returned when Deserialize is called</typeparam>
-    public abstract class Serializer<T>
+    public static class Serializer
     {
         /// <summary>
         /// Given a <see cref="Utf8JsonReader"/>, deserializes an object in Json and returns an instance of type T.
@@ -29,7 +28,7 @@ namespace AppleSerialization
         /// value (<see cref="Environment.DefaultSerializerOptions"/>) will be used instead.</param>
         /// <returns>If deserialization is successful, an instance of type T is returned. If unsuccessful, null is
         /// returned and a debug message is displayed to the debug console.</returns>
-        public static T? Deserialize(ref Utf8JsonReader reader, JsonSerializerOptions? options = null)
+        public static T? Deserialize<T>(ref Utf8JsonReader reader, JsonSerializerOptions? options = null)
         {
             //Ensure that the proper variables were set to in Environment
             if (Environment.DefaultFontSystem is null || Environment.GraphicsDevice is null ||
@@ -42,28 +41,29 @@ namespace AppleSerialization
 
                 //stupid null returning hack
                 object? a = null;
-                return (T?) a;
+                return (T?)a;
             }
-            
+
             //this is a bit complicated, but what we are doing here is that we are using the constructor marked with
             //the JsonSerializer attribute to create an instance of T. 
             ConstructorInfo jsonConstructor = (from elm in typeof(T).GetConstructors()
                 from attribute in elm.GetCustomAttributes(true)
                 where attribute is JsonConstructorAttribute
                 select elm).First();
-            
+
             options ??= Environment.DefaultSerializerOptions;
 
             ParameterInfo[] jsonParameters = jsonConstructor.GetParameters();
-            object?[]? inParameters = new object?[jsonParameters.Length]; //parameters we are going to send to the constructor
-            
+            object?[]?
+                inParameters = new object?[jsonParameters.Length]; //parameters we are going to send to the constructor
+
             //given the name of a parameter, return an index in inParameters
             //for example, if the first parameter is "position". Then the key "position" will return 0
             Dictionary<string, int> parameterInIndexMap = new();
             for (int i = 0; i < jsonParameters.Length; i++)
             {
                 string? name = jsonParameters[i].Name;
-                
+
                 if (name is not null)
                 {
                     parameterInIndexMap.Add(name, i);
@@ -110,20 +110,7 @@ namespace AppleSerialization
             //if the type has a parent panel property, then give it a value
             object returnObject = jsonConstructor.Invoke(inParameters);
 
-            return (T) returnObject;
-        }
-
-        /// <summary>
-        /// Serializes the current object to a string value that is representative of the object in json format.
-        /// </summary>
-        /// <param name="options"><see cref="JsonWriterOptions"/> instance that determine how the object is serialized.
-        /// If null, a default value will be used (<see cref="Environment.DefaultWriterOptions"/>) </param>
-        /// <exception cref="NotImplementedException">This exception is thrown when this type does not override
-        /// <see cref="Serialize"/>.</exception>
-        /// <returns>A a string value that is representative of the object in json format.</returns>
-        public virtual string Serialize(JsonWriterOptions? options = null)
-        {
-            throw new NotImplementedException($"{typeof(T)} does not implement Serialize()!");
+            return (T)returnObject;
         }
     }
 }
