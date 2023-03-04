@@ -312,7 +312,7 @@ namespace AppleSerialization
 
             Debug.WriteLine(
                 $"{nameof(ConverterHelper)}.{nameof(GetTypeFromString)}: Can't find type of name {typeName}! " +
-                $"Ensure that the type exists in Environment.ExternalTypes and that the type name is correct.");
+                "Ensure that the type exists in SerializationSettings.ExternalTypes and that the type name is correct.");
 
             return null;
         }
