@@ -12,7 +12,7 @@ namespace AppleSerialization.Converters
     /// <summary>
     /// Converts a string representative of a <see cref="Texture2D"/> instance when deserializing a json file.
     /// </summary>
-    public class Texture2DJsonConverter : JsonConverter<Texture2D>
+    public class Texture2DJsonConverter : JsonConverter<Texture2D>, IDisposable
     {
         public GraphicsDevice GraphicsDevice { get; init; }
         public SerializationSettings SerializationSettings { get; init; }
@@ -111,6 +111,16 @@ namespace AppleSerialization.Converters
         public override void Write(Utf8JsonWriter writer, Texture2D value, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            foreach (Texture2D texture in _textureCache.Values)
+            {
+                texture.Dispose();
+            }
+            
+            _textureCache.Clear();
         }
     }
 }

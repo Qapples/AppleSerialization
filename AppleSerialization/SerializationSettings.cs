@@ -8,7 +8,10 @@ using Microsoft.Xna.Framework;
 
 namespace AppleSerialization
 {
-    public sealed class SerializationSettings
+    /// <summary>
+    /// Provides additional informatoin/data/context to aid in the serialization/deserialization process.
+    /// </summary>
+    public sealed class SerializationSettings : IDisposable
     {
         /// <summary>
         /// If a <see cref="JsonProperty"/> instance whose <see cref="JsonProperty.Name"/> is this value then that
@@ -86,6 +89,21 @@ namespace AppleSerialization
                 throw new ArrayTypeMismatchException(
                     $"The following types do not implement JsonConverter<>: {invalidConverterTypes.ToString()[..^2]}.");
             }
+        }
+
+        public void Dispose()
+        {
+            foreach (object converterObj in _converters.Values)
+            {
+                if (converterObj is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            
+            _converters.Clear();
+            ExternalTypes.Clear();
+            TypeAliases.Clear();
         }
     }
 }

@@ -12,7 +12,7 @@ namespace AppleSerialization.Converters
     /// <summary>
     /// Converts the name of a font system to a <see cref="FontSystem"/> instance when deserializing a json file.
     /// </summary>
-    public class FontSystemJsonConverter : JsonConverter<FontSystem>
+    public class FontSystemJsonConverter : JsonConverter<FontSystem>, IDisposable
     {
         public SerializationSettings SerializationSettings { get; init; }
         public FontSystem DefaultFontSystem { get; init; }
@@ -97,6 +97,16 @@ namespace AppleSerialization.Converters
         public override void Write(Utf8JsonWriter writer, FontSystem value, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            foreach (FontSystem fontSystem in _fontSystemsCache.Values)
+            {
+                fontSystem.Dispose();
+            }
+            
+            _fontSystemsCache.Clear();
         }
     }
 }
