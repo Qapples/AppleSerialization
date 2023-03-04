@@ -39,15 +39,16 @@ namespace AppleSerialization.Info
         /// <param name="entityContent">The contents of json text that describe the components of that entity along
         /// with an ID. (Note: this is the data of the json itself! Not the file name. Use
         /// <see cref="File.ReadAllText(string)"/> to get the contents of a file.</param>
+        /// <param name="settings">Provides additional informatoin/data/context necessary for serialization.</param>
         /// <param name="jsonReaderOptions"><see cref="JsonReaderOptions"/> instance that determines how the data from
         /// <see cref="entityContent"/> is read. This parameter is optional and a default value will be used instead if
         /// this parameter is not set to or is null.</param>
         /// <param name="jsonSerializerOptions"><see cref="JsonSerializerOptions"/> instance that determines how the
         /// data from <see cref="entityContent"/> is serialized. This parameter is optional and a default value will
         /// be used instead if this parameter is not set to or is null.</param>
-        public void AddEntity(string entityContent, JsonReaderOptions? jsonReaderOptions = null,
-            JsonSerializerOptions? jsonSerializerOptions = null) =>
-            AddEntities(new[] {entityContent}, jsonReaderOptions, jsonSerializerOptions);
+        public void AddEntity(string entityContent, SerializationSettings settings,
+            JsonReaderOptions? jsonReaderOptions = null, JsonSerializerOptions? jsonSerializerOptions = null) =>
+            AddEntities(new[] { entityContent }, settings, jsonReaderOptions, jsonSerializerOptions);
 
         /// <summary>
         /// Adds an entity through the serialization of numerous instances of .json text that describes the
@@ -56,13 +57,14 @@ namespace AppleSerialization.Info
         /// <param name="entityContents">A collection of json text that describe the components of entities along
         /// with their IDs. (Note: this is the data of the json itself! Not the file name. Use
         /// <see cref="File.ReadAllText(string)"/> to get the contents of a file.</param>
+        /// <param name="settings">Provides additional informatoin/data/context necessary for serialization. </param>
         /// <param name="jsonReaderOptions"><see cref="JsonReaderOptions"/> instance that determines how the data from
         /// <see cref="entityContents"/> is read. This parameter is optional and a default value will be used instead if
         /// this parameter is not set to or is null.</param>
         /// <param name="jsonSerializerOptions"><see cref="JsonSerializerOptions"/> instance that determines how the
         /// data from <see cref="entityContents"/> is serialized. This parameter is optional and a default value will
         /// be used instead if this parameter is not set to or is null.</param>
-        public void AddEntities(IEnumerable<string> entityContents, JsonReaderOptions? jsonReaderOptions = null,
+        public void AddEntities(IEnumerable<string> entityContents, SerializationSettings settings, JsonReaderOptions? jsonReaderOptions = null,
             JsonSerializerOptions? jsonSerializerOptions = null)
         {
             foreach (string contents in entityContents)
@@ -70,7 +72,7 @@ namespace AppleSerialization.Info
                 Utf8JsonReader reader =
                     new(Encoding.UTF8.GetBytes(contents), jsonReaderOptions ?? _defaultJsonReaderOptions);
                 
-                EntityInfo? entityInfo = Serializer.Deserialize<EntityInfo>(ref reader,
+                EntityInfo? entityInfo = Serializer.Deserialize<EntityInfo>(ref reader, settings,
                     jsonSerializerOptions ?? _defaultJsonSerializationOptions);
                 if (entityInfo is not null) Entities.Add(entityInfo);
             }

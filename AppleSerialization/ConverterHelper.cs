@@ -93,12 +93,14 @@ namespace AppleSerialization
         /// </summary>
         /// <param name="reader">Utf8JsonReader used to provide the data for getting an object</param>
         /// <param name="type">The type of data. Decides what converter to use</param>
+        /// <param name="settings">Serialization settings containing additional information/data needed for serialization
+        /// </param>
         /// <param name="options">Options associated with the Utf8JsonReader</param>
         /// <returns>If there is a converter associated with the type parameter, then an object that has been passed
         /// through the associated converter is returned. If there is no such converter, then null is returned.
         /// If, for any reason, the conversion fails, null is also returned and a debug message is displayed
         /// </returns>
-        public static object? GetValueFromReader(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
+        public static object? GetValueFromReader(ref Utf8JsonReader reader, Type type, SerializationSettings settings, JsonSerializerOptions options)
         {
             //if the type already has an existing read method in Utf8JsonReader, then just use that method.
             if (ExcludedTypes.TryGetValue(type, out var getDelegate))
@@ -115,11 +117,10 @@ namespace AppleSerialization
                 return null;
             }
 
-            object? converterInstance = Activator.CreateInstance(converterType);
-            if (converterInstance is null)
+            if (!settings.Converters.TryGetValue(converterType, out object? converterInstance))
             {
-                Debug.WriteLine($"Activator.CreateInstance returned null of type {converterType}. " +
-                                $"GetValueFromReader is returning null");
+                Debug.WriteLine($"{nameof(GetValueFromReader)}: cannot find converter of type {converterType}. " +
+                                $"Returning null.");
                 return null;
             }
 
@@ -138,10 +139,13 @@ namespace AppleSerialization
         /// </summary>
         /// <param name="reader">Utf8JsonReader instance that provides the data to deserialize. The token type of the
         /// reader MUST initially be "TokenType.StartArray" or else the function will fail.</param>
+        /// <param name="settings"><see cref="SerializationSettings"/> object whose
+        /// <see cref="SerializationSettings.ExternalTypes"/> and <see cref="SerializationSettings.TypeAliases"/> are
+        /// used to find <see cref="Type"/>s from type names.</param>
         /// <param name="options">Options associated with the Utf8JsonReader</param>
         /// <returns>If successful, returns an array of objects that represents the serialization of each element in a
         /// Json array. If unsuccessful, null is returned and a message is written to the debugger</returns>
-        public static object?[]? GetArrayFromReader(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        public static object?[]? GetArrayFromReader(ref Utf8JsonReader reader, SerializationSettings settings, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
@@ -155,7 +159,7 @@ namespace AppleSerialization
 
             while (reader.TokenType != JsonTokenType.EndArray)
             {
-                Type? valueType = GetTypeFromObjectReader(ref reader);
+                Type? valueType = GetTypeFromObjectReader(ref reader, settings);
                 if (valueType is null)
                 {
                     Debug.WriteLine($"Type is null (GetArrayFromReader). Skipping object ...");
@@ -179,7 +183,7 @@ namespace AppleSerialization
                     if (valueType == typeof(ValueInfo))
                     {
                         ValueInfo? valueInfoNullable =
-                            (ValueInfo?) deserializeHelperInstance.Deserialize(ref reader, options);
+                            (ValueInfo?) deserializeHelperInstance.Deserialize(ref reader, settings, options);
 
                         if (valueInfoNullable is null)
                         {
@@ -216,7 +220,7 @@ namespace AppleSerialization
                     }
                     else
                     {
-                        outputList.Add(deserializeHelperInstance.Deserialize(ref reader, options));
+                        outputList.Add(deserializeHelperInstance.Deserialize(ref reader, settings, options));
                     }
                 }
 
@@ -227,12 +231,12 @@ namespace AppleSerialization
         }
 
         /// <summary>
-        /// Finds the property with a name of <see cref="Environment.TypeIdentifier"/> in a Json object and returns the
-        /// corresponding type. Returns null if not found.
+        /// Finds the property with a name of <see cref="SerializationSettings.TypeIdentifier"/> in a Json object and
+        /// returns the corresponding type. Returns null if not found.
         /// </summary>
-        private static Type? GetTypeFromObjectReader(ref Utf8JsonReader reader)
+        private static Type? GetTypeFromObjectReader(ref Utf8JsonReader reader, SerializationSettings settings)
         {
-            string typeIdentifier = Environment.TypeIdentifier;
+            string typeIdentifier = SerializationSettings.TypeIdentifier;
             
             while ((reader.TokenType != JsonTokenType.PropertyName || reader.GetString()! != typeIdentifier) &&
                    reader.TokenType != JsonTokenType.EndObject)
@@ -258,7 +262,7 @@ namespace AppleSerialization
                 return null;
             }
 
-            return GetTypeFromString(typeStr);
+            return GetTypeFromString(typeStr, settings);
         }
 
         /// <summary>
@@ -266,15 +270,17 @@ namespace AppleSerialization
         /// property.
         /// </summary>
         /// <param name="obj">The <see cref="JsonObject"/> to find the type of</param>
+        /// <param name="settings"><see cref="SerializationSettings"/> object that is passed to
+        /// <see cref="GetTypeFromString"/> to get a type from a type name.</param>
         /// <returns>If a type was found for the provided object, then a <see cref="Type"/> is returned. Otherwise,
         /// null is returned.</returns>
-        public static Type? GetTypeFromObject(JsonObject obj)
+        public static Type? GetTypeFromObject(JsonObject obj, SerializationSettings settings)
         {
             foreach (JsonProperty prop in obj.Properties)
             {
-                if (prop.Name == Environment.TypeIdentifier && prop.Value is string typeName)
+                if (prop.Name == SerializationSettings.TypeIdentifier && prop.Value is string typeName)
                 {
-                    return GetTypeFromString(typeName);
+                    return GetTypeFromString(typeName, settings);
                 }
             }
 
@@ -282,16 +288,16 @@ namespace AppleSerialization
         }
 
         /// <summary>
-        /// Attempts to obtain a type from name.
+        /// Attempts to obtain a <see cref="Type"/> from name using <see cref="SerializationSettings"/>
         /// </summary>
-        /// <remarks>External types must be added to <see cref="Environment.ExternalTypes"/>. Otherwise, the external
-        /// type cannot be found and null will be returned.</remarks>
         /// <param name="typeName">The name of the type.</param>
+        /// <param name="settings">Provides <see cref="SerializationSettings.TypeAliases"/> and
+        /// <see cref="SerializationSettings.ExternalTypes"/> to get a type from a type name.</param>
         /// <returns>If <see cref="typeName"/> is a valid type name or a valid alias for a type, then the type that
         /// <see cref="typeName"/> represents is returned. Otherwise, null is returned.</returns>
-        public static Type? GetTypeFromString(string typeName)
+        public static Type? GetTypeFromString(string typeName, SerializationSettings settings)
         {
-            if (Environment.TypeAliases.TryGetValue(typeName, out var alias))
+            if (settings.TypeAliases.TryGetValue(typeName, out var alias))
             {
                 typeName = alias;
             }
@@ -299,7 +305,7 @@ namespace AppleSerialization
             Type? valueType = Type.GetType(typeName!);
             if (valueType is not null) return valueType;
 
-            if (Environment.ExternalTypes.TryGetValue(typeName, out valueType))
+            if (settings.ExternalTypes.TryGetValue(typeName, out valueType))
             {
                 return valueType;
             }
@@ -317,16 +323,20 @@ namespace AppleSerialization
         /// <param name="reader">Utf8JsonReader instance that provides the data to deserialize. It is preferable that
         /// the TokenType property first be "JsonTokenType.StartObject"</param>
         /// <param name="type">The type of the object to deserialize</param>
+        /// <param name="settings"><see cref="SerializationSettings"/> object whose
+        /// <see cref="SerializationSettings.ExternalTypes"/> and <see cref="SerializationSettings.TypeAliases"/> are
+        /// used to find <see cref="Type"/>s from type names.</param>
         /// <param name="options">Options associated with the Utf8JsonReader</param>
         /// <returns>Returns an object that is representative of the Json data provided by the reader. If null, then
         /// the deserialization was unsuccessful</returns>
-        public static object? GetObjectFromReader(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
+        public static object? GetObjectFromReader(ref Utf8JsonReader reader, Type type, SerializationSettings settings,
+            JsonSerializerOptions options)
         {
             //If the given type does not (or cannot) have a valid JsonConstructor, then see if the object we are going
             //to deserialize has one.
             if (!type.IsTypeJsonSerializable())
             {
-                type = GetTypeFromObjectReader(ref reader) ?? type;
+                type = GetTypeFromObjectReader(ref reader, settings) ?? type;
             }
 
             Type deserializeHelperType =
@@ -334,7 +344,7 @@ namespace AppleSerialization
 
             if (Activator.CreateInstance(deserializeHelperType) is DeserializeHelper deserializeHelperInstance)
             {
-                return deserializeHelperInstance.Deserialize(ref reader, options);
+                return deserializeHelperInstance.Deserialize(ref reader, settings, options);
             }
 
             return null;
@@ -388,7 +398,7 @@ namespace AppleSerialization
         /// </summary>
         public abstract class DeserializeHelper
         {
-            public abstract object? Deserialize(ref Utf8JsonReader reader, JsonSerializerOptions options);
+            public abstract object? Deserialize(ref Utf8JsonReader reader, SerializationSettings settings, JsonSerializerOptions options);
         }
 
         /// <summary>
@@ -397,7 +407,8 @@ namespace AppleSerialization
         /// <typeparam name="T">The return type of the Deserialize method</typeparam>
         public class DeserializeHelper<T> : DeserializeHelper
         {
-            private delegate T? DeserializeDelegate(ref Utf8JsonReader reader, JsonSerializerOptions options);
+            private delegate T? DeserializeDelegate(ref Utf8JsonReader reader, SerializationSettings settings,
+                JsonSerializerOptions options);
 
             private readonly DeserializeDelegate? _deserializeDelegate;
 
@@ -406,13 +417,13 @@ namespace AppleSerialization
                 _deserializeDelegate = Serializer.Deserialize<T>;
             }
 
-            public override object? Deserialize(ref Utf8JsonReader reader,
+            public override object? Deserialize(ref Utf8JsonReader reader, SerializationSettings settings,
                 JsonSerializerOptions options)
             {
                 if (_deserializeDelegate is null) return null;
                 
 
-                return (T?) _deserializeDelegate.Invoke(ref reader, options);
+                return (T?) _deserializeDelegate.Invoke(ref reader, settings, options);
             }
         }
     }

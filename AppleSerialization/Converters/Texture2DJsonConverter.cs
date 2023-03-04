@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
@@ -8,66 +10,97 @@ using Microsoft.Xna.Framework.Graphics;
 namespace AppleSerialization.Converters
 {
     /// <summary>
-    /// Class used to convert string values found in Json files to Texture2D instances
+    /// Converts a string representative of a <see cref="Texture2D"/> instance when deserializing a json file.
     /// </summary>
     public class Texture2DJsonConverter : JsonConverter<Texture2D>
     {
+        public GraphicsDevice GraphicsDevice { get; init; }
+        public SerializationSettings SerializationSettings { get; init; }
+
+        private Dictionary<string, Texture2D> _textureCache;
+        private IReadOnlyDictionary<string, Texture2D> TextureCache => _textureCache;
+
+        public Texture2DJsonConverter(GraphicsDevice graphicsDevice,
+            SerializationSettings settings)
+        {
+            (GraphicsDevice, SerializationSettings) = (graphicsDevice, settings);
+
+            _textureCache = new Dictionary<string, Texture2D>();
+        }
+        
         /// <summary>
-        /// Given the name of a texture loaded through the content pipeline, or a Color via Color.{Color Name}
-        /// returns a Texture2D object from a string value in Json files
+        /// Given the relative path (relative to <see cref="SerializationSettings.ContentDirectory"/>) of a texture,
+        /// or a <see cref="Color"/> in the format of "Color.{Color Name}", returns a <see cref="Texture2D"/> object
+        /// from a string value in json files.
         /// </summary>
         /// <param name="reader">JsonReader instance used to read data from the Json file</param>
         /// <param name="typeToConvert">The type that is being converted to (Texture2D)</param>
         /// <param name="options">The options of the JsonSerializer used</param>
-        /// <returns>The Texture2D found by name, or a Color via Color.{Color Name}. If the string value from the Json
-        /// object begins with "Color.", then a width * height box which is homogenous of the color specified is
-        /// returned as a Texture. Otherwise, a texture via querying the ContentManager with the specified value is
-        /// returned instead. If no Texture2D is found, then a black and pink checkerboard
-        /// texture is used in place. If there is no size or scale property found within the Json object, a default
-        /// size of 100x100 is used. (Bounds property is prioritized if both size and scale property exists)</returns>
+        /// <returns>The Texture2D found by a relative path or the name of a <see cref="Color"/>. If the string value from
+        /// the Json object begins with "Color.", then a width * height box which is homogenous of the color specified
+        /// is returned as a Texture. If no Texture2D is found, then a black and pink checkerboard texture is used in
+        /// place. If there is no size or scale property found within the Json object, a default size of 100x100 is used.
+        /// (Bounds property is prioritized if both size and scale property exists)</returns>
         public override Texture2D Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            //First, try to parse a color value. If there is no color value, then get a Texture2D by name via the global
-            //content manager
-
-            Vector2? currentObjSize = Environment.CurrentDeserializingObjectSize;
+#if DEBUG
+            const string methodName = $"{nameof(Texture2DJsonConverter)}.{nameof(Read)}";
+#endif
+            Vector2? currentObjSize = SerializationSettings.CurrentDeserializingObjectSize;
             var (width, height) = ((int) (currentObjSize?.X ?? 1), (int) (currentObjSize?.Y ?? 1));
 
             if (currentObjSize is null)
             {
-                Debug.WriteLine($"{nameof(currentObjSize)} is null and the width and height of the texture will" +
-                                $"have dimensions of 1 and 1");
+#if DEBUG
+                Debug.WriteLine($"{methodName}: {nameof(currentObjSize)} is null and the width and height of the" +
+                                $" texture will have dimensions of 1 and 1");
+#endif
             }
             
-            string? value = reader.GetString();
-            if (value is null)
+            string? textureRelativePath = reader.GetString();
+            if (textureRelativePath is null)
             {
-                Debug.WriteLine("Unable to get the string value when getting Texture2D. Using default texture");
-                return TextureHelper.GenerateDefaultTexture(Environment.GraphicsDevice, width, height);
+#if DEBUG
+                Debug.WriteLine($"{methodName}: Unable to get the string value when getting Texture2D. Using " +
+                                $"default texture.");
+#endif
+                return TextureHelper.GenerateDefaultTexture(GraphicsDevice, width, height);
             }
 
-            Color? textureColor = TextureHelper.GetColorFromName(value.ToLower());
+            //First, try to parse a color value. If there is no color value, then get a Texture2D by name via the global
+            //content manager
+            
+            Color? textureColor = TextureHelper.GetColorFromName(textureRelativePath.ToLower());
 
             if (textureColor is not null)
             {
                 Color paramColor = textureColor.Value;
 
                 //TextureFromColor is not case-sensitive, so we don't need to do anything extra to the string value
-                return TextureHelper.CreateTextureFromColor(Environment.GraphicsDevice, paramColor, width, height);
+                return TextureHelper.CreateTextureFromColor(GraphicsDevice, paramColor, width, height);
             }
 
             //the string value is not a color, so intercept it as a name to a Texture2D existing within the content
             //manager
-            Texture2D? outTexture = Environment.ContentManager.Load<Texture2D>(value);
-
-            if (outTexture is not null)
+            if (_textureCache.TryGetValue(textureRelativePath, out Texture2D? cachedTexture))
             {
-                return outTexture;
+                return cachedTexture;
             }
 
-            Debug.WriteLine($"Texture of name {value} was not found. Using default texture.");
-            return TextureHelper.GenerateDefaultTexture(Environment.GraphicsDevice, width, height);
-            
+            string textureAbsolutePath = Path.Combine(SerializationSettings.ContentDirectory, textureRelativePath);
+            if (File.Exists(textureAbsolutePath))
+            {
+                Texture2D texture = Texture2D.FromFile(GraphicsDevice, textureAbsolutePath);
+                _textureCache[textureRelativePath] = texture;
+
+                return texture;
+            }
+
+#if DEBUG
+            Debug.WriteLine($"{methodName}: cannot find texture from path. Returning default texture. Requested" +
+                            $" path: {textureAbsolutePath}");
+#endif
+            return TextureHelper.GenerateDefaultTexture(GraphicsDevice, width, height);
         }
 
         /// <summary>

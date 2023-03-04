@@ -73,8 +73,7 @@ namespace AppleSerialization.Json
             //We have a default constructor here in the case that we want to call the other constructor with all null
             //values via reflection more simply and easily.
         }
-        
-        
+
         /// <summary>
         /// Creates a new <see cref="JsonObject"/> instance based on the data received from a
         /// <see cref="Utf8JsonReader"/> instance.
@@ -85,27 +84,11 @@ namespace AppleSerialization.Json
         /// <param name="parent">The parent of the newly created instance. If null, then the object has no parent. By
         /// default null.</param>
         /// <returns>A new <see cref="JsonObject"/> object that represents the json data given to by the
-        /// <see cref="Utf8JsonReader"/>. If either of the following values are null in <see cref="Environment"/>: <br/>
-        /// <see cref="Environment.DefaultFontSystem"/> <br/>
-        /// <see cref="Environment.GraphicsDevice"/> <br/>
-        /// <see cref="Environment.ContentManager"/> <br/>
-        /// OR if there was a parsing error then null is returned along with a debug message.</returns>
+        /// <see cref="Utf8JsonReader"/>. If there was a parsing error then null is returned along with a debug message.
+        /// </returns>
         public static JsonObject? CreateFromJsonReader(ref Utf8JsonReader reader, JsonObject? parent = null)
         {
             const string methodName = nameof(JsonObject) + "." + nameof(CreateFromJsonReader);
-            
-            //Ensure that the proper variables were set to in Environment
-            if (Environment.DefaultFontSystem is null || Environment.GraphicsDevice is null ||
-                Environment.ContentManager is null)
-            {
-                Debug.WriteLine($"{methodName}: One or more of the environment variables are null: " +
-                                $"\nDefaultFontSystem: {(Environment.DefaultFontSystem is null ? "null" : "not null")} " +
-                                $"\nGraphicsDevice: {(Environment.GraphicsDevice is null ? "null" : "not null")} " +
-                                $"\nContentManager: {(Environment.ContentManager is null ? "null" : "not null")}" +
-                                "\n null returned.");
-        
-                return null;
-            }
 
             JsonObject rootObject = new() {Parent = parent};
 
@@ -455,6 +438,7 @@ namespace AppleSerialization.Json
             
             return null;
         }
+        
         
         // ReSharper disable BuiltInTypeReferenceStyle
         private static void WriteNumber(Utf8JsonWriter writer, object value)
