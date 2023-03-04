@@ -80,8 +80,7 @@ namespace AppleSerialization
                     //generating textures on the spot i.e. when a texture is not found and a replacement is needed.
                     //this is a pretty hacky solution. it works, I guess...
                     //TODO: find a better solution to handling size/scale for UI during serialization.
-                    if (lowerPropertyName is "size" or "scale" && parameterValue is string s &&
-                        ParseHelper.TryParseVector2(s, out var value))
+                    if (lowerPropertyName is "size" or "scale" && parameterValue is Vector2 value)
                     {
                         settings.CurrentDeserializingObjectSize = value;
                     }
