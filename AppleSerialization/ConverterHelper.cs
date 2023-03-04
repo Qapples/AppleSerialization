@@ -117,7 +117,7 @@ namespace AppleSerialization
                 return null;
             }
 
-            if (!settings.Converters.TryGetValue(converterType, out object? converterInstance))
+            if (!settings.Converters.TryGetValue(converterType, out JsonConverter? converterInstance))
             {
                 Debug.WriteLine($"{nameof(GetValueFromReader)}: cannot find converter of type {converterType}. " +
                                 $"Returning null.");

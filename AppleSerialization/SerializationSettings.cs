@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 namespace AppleSerialization
 {
     /// <summary>
-    /// Provides additional informatoin/data/context to aid in the serialization/deserialization process.
+    /// Provides additional information/data/context to aid in the serialization/deserialization process.
     /// </summary>
     public sealed class SerializationSettings : IDisposable
     {
@@ -19,14 +19,14 @@ namespace AppleSerialization
         /// </summary>
         public const string TypeIdentifier = "$type";
 
-        private Dictionary<Type, object> _converters;
+        private Dictionary<Type, JsonConverter> _converters;
         
         /// <summary>
-        /// Readonly dictionary of objects that implement <see cref="JsonConverter{T}"/> that are used
+        /// Readonly dictionary of objects that implement <see cref="JsonConverter{"/> that are used
         /// for converting types during deserialization. The key is the <see cref="Type"/> of the converter, and the
-        /// value is the converter object itself that implements <see cref="JsonConverter{T}"/>.
+        /// value is the converter object itself that implements <see cref="JsonConverter"/>.
         /// </summary>
-        public IReadOnlyDictionary<Type, object> Converters => _converters;
+        public IReadOnlyDictionary<Type, JsonConverter> Converters => _converters;
         
         /// <summary>
         /// The absolute directory that contains all the potential assets that can be used. This is necessary as some
@@ -39,7 +39,7 @@ namespace AppleSerialization
         /// A <see cref="Dictionary{TKey,TValue}"/> contains any external types that will be involved in serialization.
         /// The key is the name of the type in string form.
         /// </summary>
-        public Dictionary<string, Type> ExternalTypes { get;  }
+        public Dictionary<string, Type> ExternalTypes { get; }
 
         /// <summary>
         /// A <see cref="Dictionary{TKey,TValue}"/> that provides alternative aliases for types. The key represents
@@ -54,11 +54,11 @@ namespace AppleSerialization
         /// </summary>
         internal Vector2 CurrentDeserializingObjectSize;
 
-        public SerializationSettings(object[] converters, string contentDirectory,
+        public SerializationSettings(JsonConverter[] converters, string contentDirectory,
             Dictionary<string, Type> externalTypes, Dictionary<string, string> typeAliases)
         {
-            _converters = new Dictionary<Type, object>();
-            foreach (object converter in converters)
+            _converters = new Dictionary<Type, JsonConverter>();
+            foreach (JsonConverter converter in converters)
             {
                 _converters[converter.GetType()] = converter;
             }
@@ -66,34 +66,16 @@ namespace AppleSerialization
             ContentDirectory = contentDirectory;
             ExternalTypes = externalTypes;
             TypeAliases = typeAliases;
-            
-            ValidateConverters();
         }
 
-        private void ValidateConverters()
+        public void AddConverter<T>(T converter) where T : JsonConverter
         {
-            StringBuilder invalidConverterTypes = new();
-            
-            foreach (object converter in _converters.Values)
-            {
-                Type converterType = converter.GetType();
-                
-                if (!converterType.IsSubclassOf(typeof(JsonConverter<>)))
-                {
-                    invalidConverterTypes.Append($"{converterType.Name}, ");
-                }
-            }
-
-            if (invalidConverterTypes.Length > 0)
-            {
-                throw new ArrayTypeMismatchException(
-                    $"The following types do not implement JsonConverter<>: {invalidConverterTypes.ToString()[..^2]}.");
-            }
+            _converters[typeof(T)] = converter;
         }
 
         public void Dispose()
         {
-            foreach (object converterObj in _converters.Values)
+            foreach (JsonConverter converterObj in _converters.Values)
             {
                 if (converterObj is IDisposable disposable)
                 {
