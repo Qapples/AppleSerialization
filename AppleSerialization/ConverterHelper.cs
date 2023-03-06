@@ -21,19 +21,6 @@ namespace AppleSerialization
     public static class ConverterHelper
     {
         /// <summary>
-        /// Associates types (Vector2, etc.) with their corresponding converter class
-        /// </summary>
-        private static readonly Dictionary<Type, Type> TypeConverterMap = new()
-        {
-            {typeof(Color), typeof(ColorJsonConverter)},
-            {typeof(FontSystem), typeof(FontSystemJsonConverter)},
-            {typeof(Texture2D), typeof(Texture2DJsonConverter)},
-            {typeof(Vector2), typeof(Vector2JsonConverter)},
-            {typeof(Vector3), typeof(Vector3JsonConverter)},
-            {typeof(Rectangle), typeof(RectangleJsonConverter)}
-        };
-
-        /// <summary>
         /// All types that are not converted in the TypeConverterMap are listed here
         /// </summary>
         // we're not using the in type reference to match the name of the methods of the Utf8JsonReader struct
@@ -54,7 +41,7 @@ namespace AppleSerialization
             {typeof(String), (ref Utf8JsonReader reader) => reader.GetString()},
             {typeof(UInt16), (ref Utf8JsonReader reader) => reader.GetUInt16()},
             {typeof(UInt32), (ref Utf8JsonReader reader) => reader.GetUInt32()},
-            {typeof(UInt64), (ref Utf8JsonReader reader) => reader.GetUInt64()},
+            {typeof(UInt64), (ref Utf8JsonReader reader) => reader.GetUInt64()}
         };
 
         /// <summary>
@@ -108,24 +95,16 @@ namespace AppleSerialization
                 return getDelegate(ref reader);
             }
 
-            //we're doing alot of null checks here just to be safe! we're working in a nullable reference types
-            //environment
-            if (!TypeConverterMap.TryGetValue(type, out Type converterType))
-            {
-                Debug.WriteLine(
-                    $"Cannot get converter for the type {type}! GetValueFromReader is returning null");
-                return null;
-            }
+            var (converterType, converter) = settings.Converters.FirstOrDefault(c => c.Value.CanConvert(type));
 
-            if (!settings.Converters.TryGetValue(converterType, out JsonConverter? converterInstance))
+            if (converter is null || converterType is null)
             {
-                Debug.WriteLine($"{nameof(GetValueFromReader)}: cannot find converter of type {converterType}. " +
-                                $"Returning null.");
+                Debug.WriteLine($"Unable to find converter for type {type}. GetValueFromReader is returning null.");
                 return null;
             }
 
             var readerHelperType = typeof(ReadHelper<>).MakeGenericType(type);
-            if (Activator.CreateInstance(readerHelperType, converterInstance) is not ReadHelper readHelper)
+            if (Activator.CreateInstance(readerHelperType, converter) is not ReadHelper readHelper)
             {
                 Debug.WriteLine($"Unable to create ReadHelper<{type}>. GetValueFromReader is returning null");
                 return null;
