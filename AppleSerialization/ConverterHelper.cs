@@ -27,21 +27,21 @@ namespace AppleSerialization
         // .GetBoolean(), .GetByte(), .GetSingle(), etc.
         private static readonly Dictionary<Type, GetDelegate> ExcludedTypes = new()
         {
-            {typeof(Boolean), (ref Utf8JsonReader reader) => reader.GetBoolean()},
-            {typeof(Byte), (ref Utf8JsonReader reader) => reader.GetByte()},
-            {typeof(DateTime), (ref Utf8JsonReader reader) => reader.GetDateTime()},
-            {typeof(Decimal), (ref Utf8JsonReader reader) => reader.GetDecimal()},
-            {typeof(Double), (ref Utf8JsonReader reader) => reader.GetDouble()},
-            {typeof(Guid), (ref Utf8JsonReader reader) => reader.GetGuid()},
-            {typeof(Int16), (ref Utf8JsonReader reader) => reader.GetInt16()},
-            {typeof(Int32), (ref Utf8JsonReader reader) => reader.GetInt32()},
-            {typeof(Int64), (ref Utf8JsonReader reader) => reader.GetInt64()},
-            {typeof(SByte), (ref Utf8JsonReader reader) => reader.GetSByte()},
-            {typeof(Single), (ref Utf8JsonReader reader) => reader.GetSingle()},
-            {typeof(String), (ref Utf8JsonReader reader) => reader.GetString()},
-            {typeof(UInt16), (ref Utf8JsonReader reader) => reader.GetUInt16()},
-            {typeof(UInt32), (ref Utf8JsonReader reader) => reader.GetUInt32()},
-            {typeof(UInt64), (ref Utf8JsonReader reader) => reader.GetUInt64()}
+            { typeof(Boolean), (ref Utf8JsonReader reader) => reader.GetBoolean() },
+            { typeof(Byte), (ref Utf8JsonReader reader) => reader.GetByte() },
+            { typeof(DateTime), (ref Utf8JsonReader reader) => reader.GetDateTime() },
+            { typeof(Decimal), (ref Utf8JsonReader reader) => reader.GetDecimal() },
+            { typeof(Double), (ref Utf8JsonReader reader) => reader.GetDouble() },
+            { typeof(Guid), (ref Utf8JsonReader reader) => reader.GetGuid() },
+            { typeof(Int16), (ref Utf8JsonReader reader) => reader.GetInt16() },
+            { typeof(Int32), (ref Utf8JsonReader reader) => reader.GetInt32() },
+            { typeof(Int64), (ref Utf8JsonReader reader) => reader.GetInt64() },
+            { typeof(SByte), (ref Utf8JsonReader reader) => reader.GetSByte() },
+            { typeof(Single), (ref Utf8JsonReader reader) => reader.GetSingle() },
+            { typeof(String), (ref Utf8JsonReader reader) => reader.GetString() },
+            { typeof(UInt16), (ref Utf8JsonReader reader) => reader.GetUInt16() },
+            { typeof(UInt32), (ref Utf8JsonReader reader) => reader.GetUInt32() },
+            { typeof(UInt64), (ref Utf8JsonReader reader) => reader.GetUInt64() }
         };
 
         /// <summary>
@@ -49,22 +49,22 @@ namespace AppleSerialization
         /// </summary>
         private static readonly Dictionary<Type, ConvertDelegate> StringToValueDict = new()
         {
-            {typeof(Boolean), (string value) => Boolean.TryParse(value, out var val) ? val : null},
-            {typeof(Byte), (string value) => Byte.TryParse(value, out var val) ? val : null},
-            {typeof(DateTime), (string value) => DateTime.TryParse(value, out var val) ? val : null},
-            {typeof(Decimal), (string value) => Decimal.TryParse(value, out var val) ? val : null},
-            {typeof(Double), (string value) => Double.TryParse(value, out var val) ? val : null},
-            {typeof(Guid), (string value) => Guid.TryParse(value, out var val) ? val : null},
-            {typeof(Int16), (string value) => Int16.TryParse(value, out var val) ? val : null},
-            {typeof(Int32), (string value) => Int32.TryParse(value, out var val) ? val : null},
-            {typeof(Int64), (string value) => Int64.TryParse(value, out var val) ? val : null},
-            {typeof(SByte), (string value) => SByte.TryParse(value, out var val) ? val : null},
-            {typeof(Single), (string value) => Single.TryParse(value, out var val) ? val : null},
-            {typeof(UInt16), (string value) => UInt16.TryParse(value, out var val) ? val : null},
-            {typeof(UInt32), (string value) => UInt32.TryParse(value, out var val) ? val : null},
-            {typeof(UInt64), (string value) => UInt64.TryParse(value, out var val) ? val : null},
+            { typeof(Boolean), (string value) => Boolean.TryParse(value, out var val) ? val : null },
+            { typeof(Byte), (string value) => Byte.TryParse(value, out var val) ? val : null },
+            { typeof(DateTime), (string value) => DateTime.TryParse(value, out var val) ? val : null },
+            { typeof(Decimal), (string value) => Decimal.TryParse(value, out var val) ? val : null },
+            { typeof(Double), (string value) => Double.TryParse(value, out var val) ? val : null },
+            { typeof(Guid), (string value) => Guid.TryParse(value, out var val) ? val : null },
+            { typeof(Int16), (string value) => Int16.TryParse(value, out var val) ? val : null },
+            { typeof(Int32), (string value) => Int32.TryParse(value, out var val) ? val : null },
+            { typeof(Int64), (string value) => Int64.TryParse(value, out var val) ? val : null },
+            { typeof(SByte), (string value) => SByte.TryParse(value, out var val) ? val : null },
+            { typeof(Single), (string value) => Single.TryParse(value, out var val) ? val : null },
+            { typeof(UInt16), (string value) => UInt16.TryParse(value, out var val) ? val : null },
+            { typeof(UInt32), (string value) => UInt32.TryParse(value, out var val) ? val : null },
+            { typeof(UInt64), (string value) => UInt64.TryParse(value, out var val) ? val : null },
         };
-        
+
         /// <summary>
         /// Delegate used in <see cref="ConverterHelper.ExcludedTypes"/>.
         /// </summary>
@@ -87,7 +87,8 @@ namespace AppleSerialization
         /// through the associated converter is returned. If there is no such converter, then null is returned.
         /// If, for any reason, the conversion fails, null is also returned and a debug message is displayed
         /// </returns>
-        public static object? GetValueFromReader(ref Utf8JsonReader reader, Type type, SerializationSettings settings, JsonSerializerOptions options)
+        public static object? GetValueFromReader(ref Utf8JsonReader reader, Type type, SerializationSettings settings,
+            JsonSerializerOptions options)
         {
             //if the type already has an existing read method in Utf8JsonReader, then just use that method.
             if (ExcludedTypes.TryGetValue(type, out var getDelegate))
@@ -99,11 +100,17 @@ namespace AppleSerialization
 
             if (converter is null || converterType is null)
             {
-                Debug.WriteLine($"Unable to find converter for type {type}. GetValueFromReader is returning null.");
+                Debug.WriteLine($"Unable to find valid converter for type {type}. GetValueFromReader is returning " +
+                                $"null.");
                 return null;
             }
 
-            var readerHelperType = typeof(ReadHelper<>).MakeGenericType(type);
+            //convertFromType is NOT the same as the type parameter. This is because some converters handle the
+            //superclass /or parent of a type instead of the type driectly. An example would be EnumJsonConverter
+            //handling the Enum type instead of specific enum types (which are all children of the Enum type).
+            //convertFromType is the same as T in JsonConverter<T>
+            Type convertFromType = converterType.BaseType?.GetGenericArguments()[0] ?? type;
+            var readerHelperType = typeof(ReadHelper<>).MakeGenericType(convertFromType);
             if (Activator.CreateInstance(readerHelperType, converter) is not ReadHelper readHelper)
             {
                 Debug.WriteLine($"Unable to create ReadHelper<{type}>. GetValueFromReader is returning null");
@@ -124,7 +131,8 @@ namespace AppleSerialization
         /// <param name="options">Options associated with the Utf8JsonReader</param>
         /// <returns>If successful, returns an array of objects that represents the serialization of each element in a
         /// Json array. If unsuccessful, null is returned and a message is written to the debugger</returns>
-        public static object?[]? GetArrayFromReader(ref Utf8JsonReader reader, SerializationSettings settings, JsonSerializerOptions options)
+        public static object?[]? GetArrayFromReader(ref Utf8JsonReader reader, SerializationSettings settings,
+            JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
@@ -377,7 +385,8 @@ namespace AppleSerialization
         /// </summary>
         public abstract class DeserializeHelper
         {
-            public abstract object? Deserialize(ref Utf8JsonReader reader, SerializationSettings settings, JsonSerializerOptions options);
+            public abstract object? Deserialize(ref Utf8JsonReader reader, SerializationSettings settings,
+                JsonSerializerOptions options);
         }
 
         /// <summary>
