@@ -35,20 +35,27 @@ namespace AppleSerialization.Converters
             Color? color = TextureHelper.GetColorFromName(value);
             if (color is null)
             {
-                Debug.WriteLine($"Color of name {value} is invalid. Using default Color.Transparent value");
-                return Color.Transparent;
+                if (!ParseHelper.TryParseVector4(value, out Vector4 colorVec4))
+                {
+                    Debug.WriteLine($"Unable to parse color string value ({value}). Using default " +
+                                    $"Color.Transparent value.");
+                    return Color.Transparent;
+                }
+
+                color = new Color(colorVec4);
             }
 
             return color.Value;
         }
 
         /// <summary>
-        /// Given a color value, write the appropriate Json string using {"R":{R}, "G":{G}, "B":{B}, "A":{A}}
+        /// Given a color value, write the appropriate Json string using RGBA values in the format of "{R} {G} {B} {A}"
+        /// 
         /// </summary>
         /// <param name="writer">Object used to write the Json </param>
         /// <param name="value">The color value to write </param>
         /// <param name="options">The options of the JsonSerializer used</param>
         public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options) =>
-            writer.WriteStringValue($"\"R\":{value.R} \"G\":{value.G} \"B\":{value.B} \"A\":{value.A}");
+            writer.WriteStringValue($"{value.R} {value.G} {value.B} {value.A}");
     }
 }

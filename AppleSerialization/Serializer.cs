@@ -94,5 +94,9 @@ namespace AppleSerialization
 
             return (T)returnObject;
         }
+        
+        public static void Serialize<T>(Utf8JsonWriter writer, object obj)
+        {
+        }
     }
 }
