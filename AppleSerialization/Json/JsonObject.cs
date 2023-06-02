@@ -204,7 +204,7 @@ namespace AppleSerialization.Json
         {
             try
             {
-                using FileStream stream = File.OpenWrite(filePath);
+                using FileStream stream = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.Write);
 
                 Utf8JsonWriter writer = new(stream, options ?? DefaultWriterOptions);
                 WriteToJson(writer);
