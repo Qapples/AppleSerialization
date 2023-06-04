@@ -10,11 +10,6 @@ using Microsoft.Xna.Framework;
 
 namespace AppleSerialization
 {
-    /// <summary>
-    /// Abstract class that, when inherited from and/or provided a generic, grants deserialization from Json abilities
-    /// to the type of the generic/subclass. Also provides a method signature for serialization, which throws an
-    /// exception by default
-    /// </summary>
     public static class Serializer
     {
         /// <summary>
@@ -37,8 +32,7 @@ namespace AppleSerialization
                 select elm).First();
             
             ParameterInfo[] jsonParameters = jsonConstructor.GetParameters();
-            object?[]
-                inParameters = new object?[jsonParameters.Length]; //parameters we are going to send to the constructor
+            object?[] inParameters = new object?[jsonParameters.Length]; //parameters we are going to send to the constructor
 
             //given the name of a parameter, return an index in inParameters
             //for example, if the first parameter is "position". Then the key "position" will return 0
@@ -72,7 +66,7 @@ namespace AppleSerialization
                 }
                 else
                 {
-                    string lowerPropertyName = propertyName.ToLower();
+                    string propertyNameLowerCase = propertyName.ToLower();
                     object? parameterValue = ConverterHelper.GetValueFromReader(ref reader,
                         jsonParameters[parameterIndex].ParameterType, settings, options);
 
@@ -80,9 +74,14 @@ namespace AppleSerialization
                     //generating textures on the spot i.e. when a texture is not found and a replacement is needed.
                     //this is a pretty hacky solution. it works, I guess...
                     //TODO: find a better solution to handling size/scale for UI during serialization.
-                    if (lowerPropertyName is "size" or "scale" && parameterValue is Vector2 value)
+                    if (propertyNameLowerCase is "size" or "scale" && parameterValue is Vector2 size)
                     {
-                        settings.CurrentDeserializingObjectSize = value;
+                        settings.CurrentDeserializingObjectSize = size;
+                    }
+
+                    if (propertyNameLowerCase is "sizetype" or "scaletype")
+                    {
+                        settings.CurrentDeserializingObjectSizeType = parameterValue?.ToString();
                     }
 
                     inParameters[parameterIndex] = parameterValue;

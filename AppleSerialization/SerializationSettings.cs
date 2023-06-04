@@ -54,6 +54,14 @@ namespace AppleSerialization
         /// </summary>
         internal Vector2 CurrentDeserializingObjectSize;
 
+        /// <summary>
+        /// In some instances, an object will carry additional information regarding the units of measurement size
+        /// represents (i.e. Pixels, Inches, Ratio, etc.). If this value is null, then assume
+        /// <see cref="CurrentDeserializingObjectSize"/> represent raw pixel units.This value is only relevant in the
+        /// deserialization of UI elements.
+        /// </summary>
+        internal string? CurrentDeserializingObjectSizeType;
+
         public SerializationSettings(JsonConverter[] converters, string contentDirectory,
             Dictionary<string, Type> externalTypes, Dictionary<string, string> typeAliases)
         {

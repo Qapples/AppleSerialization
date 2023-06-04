@@ -47,7 +47,12 @@ namespace AppleSerialization.Converters
             const string methodName = $"{nameof(Texture2DJsonConverter)}.{nameof(Read)}";
 #endif
             Vector2? currentObjSize = SerializationSettings.CurrentDeserializingObjectSize;
-            var (width, height) = ((int) (currentObjSize?.X ?? 1), (int) (currentObjSize?.Y ?? 1));
+            var (width, height) = SerializationSettings.CurrentDeserializingObjectSizeType switch
+            {
+                "Ratio" or "ratio" => ((int)((currentObjSize?.X ?? 1) * GraphicsDevice.Viewport.Width),
+                    (int)((currentObjSize?.Y ?? 1) * GraphicsDevice.Viewport.Width)),
+                _ => ((int)(currentObjSize?.X ?? 1), (int)(currentObjSize?.Y ?? 1))
+            };
 
             if (currentObjSize is null)
             {
