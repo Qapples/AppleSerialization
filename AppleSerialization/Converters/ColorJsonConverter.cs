@@ -35,14 +35,16 @@ namespace AppleSerialization.Converters
             Color? color = TextureHelper.GetColorFromName(value);
             if (color is null)
             {
-                if (!ParseHelper.TryParseVector4(value, out Vector4 colorVec4))
+                if (!ParseHelper.TryParseVector4(value, out Vector4 colorVec4) || byte.MaxValue < colorVec4.X ||
+                    byte.MaxValue < colorVec4.Y || byte.MaxValue < colorVec4.Z || byte.MaxValue < colorVec4.W)
                 {
-                    Debug.WriteLine($"Unable to parse color string value ({value}). Using default " +
-                                    $"Color.Transparent value.");
+                    Debug.WriteLine($"Unable to parse color string value ({value}). Either the string is in an " +
+                                    $"improper format or one of the values is outside the accepted range [0, 255]. Using " +
+                                    $"default Color.Transparent value.");
                     return Color.Transparent;
                 }
 
-                color = new Color(colorVec4);
+                color = new Color((byte)colorVec4.X, (byte)colorVec4.Y, (byte)colorVec4.Z, (byte)colorVec4.W);
             }
 
             return color.Value;
