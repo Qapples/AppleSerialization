@@ -150,18 +150,13 @@ namespace AppleSerialization
                 if (valueType is null)
                 {
                     Debug.WriteLine($"Type is null (GetArrayFromReader). Skipping object ...");
-
-                    while (reader.TokenType != JsonTokenType.EndObject && reader.TokenType != JsonTokenType.EndArray)
-                    {
-                        reader.Read();
-                    }
-
-                    reader.Read();
+                    SkipObject(ref reader);
+                    
                     continue;
                 }
 
                 Type deserializeHelperType =
-                    typeof(DeserializeHelper<>).MakeGenericType(Nullable.GetUnderlyingType(valueType!) ?? valueType!);
+                    typeof(DeserializeHelper<>).MakeGenericType(Nullable.GetUnderlyingType(valueType) ?? valueType);
 
                 if (Activator.CreateInstance(deserializeHelperType) is DeserializeHelper
                     deserializeHelperInstance)
@@ -215,6 +210,81 @@ namespace AppleSerialization
             }
 
             return outputList.ToArray();
+        }
+
+        /// <summary>
+        /// Returns a dictionary that represents the deserialization of a JSON object.
+        /// </summary>
+        /// <param name="reader">Utf8JsonReader instance that provides the data to deserialize. The token type of the
+        /// reader MUST initially be "TokenType.StartObject" or else the function will fail.</param>
+        /// <param name="settings"><see cref="SerializationSettings"/> object whose
+        /// <see cref="SerializationSettings.ExternalTypes"/> and <see cref="SerializationSettings.TypeAliases"/> are
+        /// used to find <see cref="Type"/>s from type names.</param>
+        /// <param name="options">Options associated with the Utf8JsonReader</param>
+        /// <returns>If successful, returns a dictionary that represents the deserialization of a JSON object. 
+        /// If unsuccessful, null is returned and a message is written to the debugger.</returns>
+        public static Dictionary<string, object>? GetDictionaryFromReader(ref Utf8JsonReader reader,
+            SerializationSettings settings, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                Debug.WriteLine($"reader token type is initially not StartObject in GetDictionaryFromReader! " +
+                                $"Returning null. (Reader token type: {reader.TokenType})");
+                return null;
+            }
+
+            Dictionary<string, object> outputDict = new();
+
+            while (reader.TokenType != JsonTokenType.EndObject)
+            {
+                while (reader.TokenType != JsonTokenType.PropertyName && reader.TokenType != JsonTokenType.EndObject)
+                {
+                    reader.Read();
+                }
+                
+                string key = reader.GetString()!; // cannot be null since TokenType is PropertyName at this point.
+                
+                Type? valueType = GetTypeFromObjectReader(ref reader, settings);
+                if (valueType is null)
+                {
+                    Debug.WriteLine("Type is null (GetDictionaryFromReader). Skipping object ...");
+                    SkipObject(ref reader);
+
+                    continue;
+                }
+
+                Type deserializeHelperType =
+                    typeof(DeserializeHelper<>).MakeGenericType(Nullable.GetUnderlyingType(valueType) ?? valueType);
+
+                if (Activator.CreateInstance(deserializeHelperType) is not DeserializeHelper helper) continue;
+
+                object? value = helper.Deserialize(ref reader, settings, options);
+                if (value is null)
+                {
+                    Debug.WriteLine($"Value is null when trying to deserialize object of type {valueType} " +
+                                    $"(GetDictionaryFromReader).");
+                }
+                else
+                {
+                    if (!outputDict.TryAdd(key, value))
+                    {
+                        Debug.WriteLine($"Key {key} in dictionary already exists. Skipping object ... " +
+                                        $"(GetDictionaryFromReader).");
+                    }
+                }
+            }
+
+            return outputDict;
+        }
+        
+        private static void SkipObject(ref Utf8JsonReader reader)
+        {
+            while (reader.TokenType != JsonTokenType.EndObject && reader.TokenType != JsonTokenType.EndArray)
+            {
+                reader.Read();
+            }
+
+            reader.Read();
         }
 
         /// <summary>

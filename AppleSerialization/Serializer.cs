@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -30,7 +31,7 @@ namespace AppleSerialization
                 from attribute in elm.GetCustomAttributes(true)
                 where attribute is JsonConstructorAttribute
                 select elm).First();
-            
+
             ParameterInfo[] jsonParameters = jsonConstructor.GetParameters();
             object?[] inParameters = new object?[jsonParameters.Length]; //parameters we are going to send to the constructor
 
@@ -55,20 +56,23 @@ namespace AppleSerialization
                 if (!reader.Read()) break; //skip to next node
 
                 int parameterIndex = parameterInIndexMap[propertyName];
+                Type parameterType = jsonParameters[parameterIndex].ParameterType;
+                
                 if (reader.TokenType == JsonTokenType.StartArray)
                 {
                     inParameters[parameterIndex] = ConverterHelper.GetArrayFromReader(ref reader, settings, options);
                 }
                 else if (reader.TokenType == JsonTokenType.StartObject)
                 {
-                    inParameters[parameterIndex] = ConverterHelper.GetObjectFromReader(ref reader,
-                        jsonParameters[parameterIndex].ParameterType, settings, options);
+                    inParameters[parameterIndex] = typeof(IDictionary).IsAssignableFrom(parameterType)
+                        ? ConverterHelper.GetDictionaryFromReader(ref reader, settings, options)
+                        : ConverterHelper.GetObjectFromReader(ref reader, parameterType, settings, options);
                 }
                 else
                 {
                     string propertyNameLowerCase = propertyName.ToLower();
                     object? parameterValue = ConverterHelper.GetValueFromReader(ref reader,
-                        jsonParameters[parameterIndex].ParameterType, settings, options);
+                        parameterType, settings, options);
 
                     //this is here in the instance where we are handling UI and we need to know the size before
                     //generating textures on the spot i.e. when a texture is not found and a replacement is needed.
@@ -91,11 +95,7 @@ namespace AppleSerialization
             //if the type has a parent panel property, then give it a value
             object returnObject = jsonConstructor.Invoke(inParameters);
 
-            return (T)returnObject;
-        }
-        
-        public static void Serialize<T>(Utf8JsonWriter writer, object obj)
-        {
+            return (T) returnObject;
         }
     }
 }
