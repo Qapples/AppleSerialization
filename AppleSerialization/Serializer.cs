@@ -51,7 +51,7 @@ namespace AppleSerialization
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType != JsonTokenType.PropertyName) continue;
-
+                
                 string propertyName = reader.GetString()!; //PropertyNames will always be a string
                 if (!reader.Read()) break; //skip to next node
 

@@ -151,7 +151,6 @@ namespace AppleSerialization
                 {
                     Debug.WriteLine($"Type is null (GetArrayFromReader). Skipping object ...");
                     SkipObject(ref reader);
-                    
                     continue;
                 }
 
@@ -161,48 +160,15 @@ namespace AppleSerialization
                 if (Activator.CreateInstance(deserializeHelperType) is DeserializeHelper
                     deserializeHelperInstance)
                 {
-                    //There's a lot of checks we have to do here because a lot cannot go wrong. 
-                    if (valueType == typeof(ValueInfo))
+                    object? deserializedObject = deserializeHelperInstance.Deserialize(ref reader, settings, options);
+                    
+                    if (deserializedObject is not null)
                     {
-                        ValueInfo? valueInfoNullable =
-                            (ValueInfo?) deserializeHelperInstance.Deserialize(ref reader, settings, options);
-
-                        if (valueInfoNullable is null)
-                        {
-                            Debug.WriteLine("Error parsing ValueInfo instance! (GetArrayFromReader) Skipping...");
-
-                            reader.Read();
-                            continue;
-                        }
-
-                        ValueInfo valueInfo = valueInfoNullable.Value;
-                        Type? valueInfoType = Type.GetType(valueInfo.ValueType);
-
-                        if (valueInfoType is null)
-                        {
-                            Debug.WriteLine($"Cannot find type with name {valueInfo.Value} in ValueInfo instance " +
-                                            "in GetArrayFromReader method. Skipping...");
-
-                            reader.Read();
-                            continue;
-                        }
-
-                        if (StringToValueDict.TryGetValue(valueInfoType, out var getDelegate))
-                        {
-                            outputList.Add(getDelegate(valueInfo.Value));
-                        }
-                        else
-                        {
-                            Debug.WriteLine($"Type {valueInfoType} cannot be converted in ValueInfo instance in " +
-                                            $"GetArrayFromReader method. Skipping...");
-
-                            reader.Read();
-                            continue;
-                        }
+                        outputList.Add(deserializedObject);
                     }
                     else
                     {
-                        outputList.Add(deserializeHelperInstance.Deserialize(ref reader, settings, options));
+                        Debug.WriteLine($"Unable to deserialize object of type {valueType} in GetArrayFromReader");
                     }
                 }
 
@@ -258,19 +224,16 @@ namespace AppleSerialization
 
                 if (Activator.CreateInstance(deserializeHelperType) is not DeserializeHelper helper) continue;
 
-                object? value = helper.Deserialize(ref reader, settings, options);
-                if (value is null)
+                object? deserializedObject = helper.Deserialize(ref reader, settings, options);
+                if (deserializedObject is null)
                 {
                     Debug.WriteLine($"Value is null when trying to deserialize object of type {valueType} " +
                                     $"(GetDictionaryFromReader).");
                 }
-                else
+                else if (!outputDict.TryAdd(key, deserializedObject))
                 {
-                    if (!outputDict.TryAdd(key, value))
-                    {
-                        Debug.WriteLine($"Key {key} in dictionary already exists. Skipping object ... " +
-                                        $"(GetDictionaryFromReader).");
-                    }
+                    Debug.WriteLine($"Key {key} in dictionary already exists. Skipping object ... " +
+                                    $"(GetDictionaryFromReader).");
                 }
             }
 
@@ -286,15 +249,16 @@ namespace AppleSerialization
 
             reader.Read();
         }
-
+        
         /// <summary>
-        /// Finds the property with a name of <see cref="SerializationSettings.TypeIdentifier"/> in a Json object and
-        /// returns the corresponding type. Returns null if not found.
+        /// Gets the type string from a Utf8JsonReader.
         /// </summary>
-        private static Type? GetTypeFromObjectReader(ref Utf8JsonReader reader, SerializationSettings settings)
+        /// <param name="reader">Utf8JsonReader instance that provides the data.</param>
+        /// <returns>The type string if found, or null if not found.</returns>
+        private static string? GetTypeStringFromReader(ref Utf8JsonReader reader)
         {
             string typeIdentifier = SerializationSettings.TypeIdentifier;
-            
+
             while ((reader.TokenType != JsonTokenType.PropertyName || reader.GetString()! != typeIdentifier) &&
                    reader.TokenType != JsonTokenType.EndObject)
             {
@@ -303,19 +267,26 @@ namespace AppleSerialization
 
             if (reader.TokenType == JsonTokenType.EndObject)
             {
-                Debug.WriteLine($"type specifier was not found in the object and the type could not be " +
-                                $"determined!. GetTypeFromObjectReader (private) returning null.");
+                Debug.WriteLine($"Type specifier was not found in the object and the type could not be determined! " +
+                                $"GetTypeStringFromReader (private) returning null.");
 
                 return null;
             }
 
             reader.Read();
 
-            string? typeStr = reader.GetString();
+            return reader.GetString();
+        }
+
+        /// <summary>
+        /// Finds the property with a name of <see cref="SerializationSettings.TypeIdentifier"/> in a Json object and
+        /// returns the corresponding type. Returns null if not found.
+        /// </summary>
+        private static Type? GetTypeFromObjectReader(ref Utf8JsonReader reader, SerializationSettings settings)
+        {
+            string? typeStr = GetTypeStringFromReader(ref reader);
             if (typeStr is null)
             {
-                Debug.WriteLine($"{nameof(ConverterHelper)}.{nameof(GetTypeFromObjectReader)}: cannot get the type! " +
-                                $"Returning null.");
                 return null;
             }
 
@@ -480,8 +451,13 @@ namespace AppleSerialization
             {
                 if (_deserializeDelegate is null) return null;
                 
+                object? deserializedObject = _deserializeDelegate.Invoke(ref reader, settings, options);
 
-                return (T?) _deserializeDelegate.Invoke(ref reader, settings, options);
+                return deserializedObject switch
+                {
+                    ValueInfo valueInfo => valueInfo.TryGetValue(out object? value) ? value : null,
+                    _ => deserializedObject
+                };
             }
         }
     }
