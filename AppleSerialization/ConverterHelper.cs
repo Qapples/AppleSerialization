@@ -171,8 +171,11 @@ namespace AppleSerialization
                         Debug.WriteLine($"Unable to deserialize object of type {valueType} in GetArrayFromReader");
                     }
                 }
-
-                reader.Read();
+                
+                while (reader.TokenType != JsonTokenType.EndArray && reader.TokenType != JsonTokenType.StartObject)
+                {
+                    reader.Read();
+                }
             }
 
             return outputList.ToArray();
@@ -244,6 +247,7 @@ namespace AppleSerialization
         {
             while (reader.TokenType != JsonTokenType.EndObject && reader.TokenType != JsonTokenType.EndArray)
             {
+                Debug.WriteLine(reader.CurrentDepth);
                 reader.Read();
             }
 
