@@ -238,6 +238,8 @@ namespace AppleSerialization
                     Debug.WriteLine($"Key {key} in dictionary already exists. Skipping object ... " +
                                     $"(GetDictionaryFromReader).");
                 }
+
+                reader.Read();
             }
 
             return outputDict;
@@ -247,7 +249,6 @@ namespace AppleSerialization
         {
             while (reader.TokenType != JsonTokenType.EndObject && reader.TokenType != JsonTokenType.EndArray)
             {
-                Debug.WriteLine(reader.CurrentDepth);
                 reader.Read();
             }
 
