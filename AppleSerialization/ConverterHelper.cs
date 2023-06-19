@@ -211,6 +211,8 @@ namespace AppleSerialization
                     reader.Read();
                 }
                 
+                if (reader.TokenType == JsonTokenType.EndObject) break;
+
                 string key = reader.GetString()!; // cannot be null since TokenType is PropertyName at this point.
                 
                 Type? valueType = GetTypeFromObjectReader(ref reader, settings);
