@@ -126,8 +126,8 @@ namespace AppleSerialization
 
             var (midWidth, midHeight) = (width / 2, height / 2);
 
-            //the texture will appear like the one in the Source Engine. It will be separated into four quadrants, with
-            //top left and bottom right being pink, and the top right and bottom left being right
+            //the texture will be separated into four quadrants, with top left and bottom right being pink, and the top
+            //right and bottom left being right
             for (int i = 0; i < textureColor.Length; i++)
             {
                 var (r, c) = (textureColor.Length / width, textureColor.Length % height);
