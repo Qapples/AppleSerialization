@@ -87,7 +87,7 @@ namespace AppleSerialization.Converters
             //First, try to parse a color value. If there is no color value, then get a Texture2D by name via the global
             //content manager
             
-            Color? textureColor = TextureHelper.GetColorFromName(textureRelativePath.ToLower());
+            Color? textureColor = TextureHelper.GetColorFromName(textureRelativePath);
 
             if (textureColor is not null)
             {

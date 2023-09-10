@@ -95,20 +95,11 @@ namespace AppleSerialization
         /// exists, then null is returned</returns>
         public static Color? GetColorFromName(string colorName)
         {
-            //ensure case-insensitivity
-            colorName = colorName.ToLower();
-
-            int colorStrIndex = colorName.IndexOf("color.");
+            int colorStrIndex = colorName.IndexOf("Color.");
             if (colorStrIndex > -1) colorName = colorName[(colorStrIndex + 6)..];
-            
-            colorName = char.ToUpper(colorName[0]) + colorName[1..];
 
-            //use reflection to access the const colorNames in the Color class. If the name is invalid, then return
-            //Color.Transparent
-            var property = typeof(Color).GetProperty(colorName, BindingFlags.Static | BindingFlags.Public)
+            return (Color?) typeof(Color).GetProperty(colorName, BindingFlags.Static | BindingFlags.Public)
                 ?.GetValue(null);
-
-            return (Color?) property;
         }
 
         /// <summary>
