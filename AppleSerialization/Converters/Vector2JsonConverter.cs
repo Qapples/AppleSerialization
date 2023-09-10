@@ -10,7 +10,7 @@ namespace AppleSerialization.Converters
     /// <summary>
     /// Class used to convert string values to Vector2 values from Json objects
     /// </summary>
-    public class Vector2JsonConverter : JsonConverter<Vector2>
+    public class Vector2JsonConverter : JsonConverter<Vector2>, IFromStringConverter
     {
         /// <summary>
         /// Given a string value from a Json value in the format of "x y" where parentheses or commas
@@ -24,21 +24,17 @@ namespace AppleSerialization.Converters
         /// parse</returns>
         public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            string? readerStr = reader.GetString();
-            if (readerStr is null)
+#if DEBUG
+            const string methodName = $"{nameof(Vector2JsonConverter)}.{nameof(Read)}";
+#endif
+            string? vectorStr = reader.GetString();
+            if (vectorStr is null)
             {
-                Debug.WriteLine("Unable to READ Vector2 value. Using default value of (0, 0)");
-                return new Vector2(0, 0);
-            }
-
-            //ignore spaces and parentheses by only taking the actual values into consideration and ignoring unneeded
-            //values
-            if (!ParseHelper.TryParseVector2(readerStr, out var result))
-            {
+                Debug.WriteLine($"{methodName}: Unable to read Vector2 value. Using default value of (0, 0).");
                 return Vector2.Zero;
             }
-            
-            return result;
+
+            return ConvertFromStringToVector(vectorStr);
         }
 
         /// <summary>
@@ -49,5 +45,24 @@ namespace AppleSerialization.Converters
         /// <param name="options">The options of the JsonSerializer used</param>
         public override void Write(Utf8JsonWriter writer, Vector2 value, JsonSerializerOptions options) =>
             writer.WriteStringValue($"{value.X} {value.Y}");
+
+        public Vector2 ConvertFromStringToVector(string vectorStr)
+        {
+#if DEBUG
+            const string methodName = $"{nameof(Vector2JsonConverter)}.{nameof(ConvertFromStringToVector)}";
+#endif
+            if (!ParseHelper.TryParseVector2(vectorStr, out Vector2 vector))
+            {
+#if DEBUG
+                Debug.WriteLine($"{methodName}: unable to parse {vectorStr} as a Vector2. Returning default " +
+                                $"value of (0,0).");
+#endif
+                return Vector2.Zero;
+            }
+            
+            return vector;
+        }
+
+        public object ConvertFromString(string vectorStr) => ConvertFromStringToVector(vectorStr);
     }
 }

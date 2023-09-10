@@ -116,7 +116,7 @@ namespace AppleSerialization
                 Debug.WriteLine($"Unable to create ReadHelper<{type}>. GetValueFromReader is returning null");
                 return null;
             }
-
+            
             return readHelper.Read(ref reader, type, options);
         }
 
@@ -462,7 +462,7 @@ namespace AppleSerialization
 
                 return deserializedObject switch
                 {
-                    ValueInfo valueInfo => valueInfo.TryGetValue(out object? value) ? value : null,
+                    ValueInfo valueInfo => valueInfo.TryGetValue(settings, out object? value) ? value : null,
                     _ => deserializedObject
                 };
             }

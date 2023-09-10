@@ -22,7 +22,7 @@ namespace AppleSerialization
         private Dictionary<Type, JsonConverter> _converters;
         
         /// <summary>
-        /// Readonly dictionary of objects that implement <see cref="JsonConverter{"/> that are used
+        /// Readonly dictionary of objects that implement <see cref="JsonConverter{T}"/> that are used
         /// for converting types during deserialization. The key is the <see cref="Type"/> of the converter, and the
         /// value is the converter object itself that implements <see cref="JsonConverter"/>.
         /// </summary>

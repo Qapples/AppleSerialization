@@ -12,7 +12,7 @@ namespace AppleSerialization.Converters
     /// <summary>
     /// Converts a string representative of a <see cref="Texture2D"/> instance when deserializing a json file.
     /// </summary>
-    public class Texture2DJsonConverter : JsonConverter<Texture2D>, IDisposable
+    public class Texture2DJsonConverter : JsonConverter<Texture2D>, IFromStringConverter, IDisposable
     {
         public GraphicsDevice GraphicsDevice { get; init; }
         public SerializationSettings SerializationSettings { get; init; }
@@ -46,32 +46,44 @@ namespace AppleSerialization.Converters
 #if DEBUG
             const string methodName = $"{nameof(Texture2DJsonConverter)}.{nameof(Read)}";
 #endif
-            Vector2? currentObjSize = SerializationSettings.CurrentDeserializingObjectSize;
-            var (width, height) = SerializationSettings.CurrentDeserializingObjectSizeType switch
-            {
-                "Ratio" or "ratio" => ((int)((currentObjSize?.X ?? 1) * GraphicsDevice.Viewport.Width),
-                    (int)((currentObjSize?.Y ?? 1) * GraphicsDevice.Viewport.Width)),
-                _ => ((int)(currentObjSize?.X ?? 1), (int)(currentObjSize?.Y ?? 1))
-            };
-
-            if (currentObjSize is null)
-            {
-#if DEBUG
-                Debug.WriteLine($"{methodName}: {nameof(currentObjSize)} is null and the width and height of the" +
-                                $" texture will have dimensions of 1 and 1");
-#endif
-            }
-            
             string? textureRelativePath = reader.GetString();
+            GetCurrentObjectSize(out var size);
+            
             if (textureRelativePath is null)
             {
 #if DEBUG
                 Debug.WriteLine($"{methodName}: Unable to get the string value when getting Texture2D. Using " +
                                 $"default texture.");
 #endif
-                return TextureHelper.GenerateDefaultTexture(GraphicsDevice, width, height);
+                return TextureHelper.GenerateDefaultTexture(GraphicsDevice, size.Width, size.Width);
             }
 
+            return ConvertFromStringToTexture(textureRelativePath);
+        }
+
+        /// <summary>
+        /// Due to limitations and other roadblocks (such as the difficultly of expressing Texture data compactly in
+        /// Json format) and the fact that this method will not be used often since most Json will be written by hand,
+        /// this method is not implemented and will throw a NotImplementedException exception
+        /// </summary>
+        public override void Write(Utf8JsonWriter writer, Texture2D value, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public Texture2D ConvertFromStringToTexture(string textureRelativePath)
+        {
+#if DEBUG
+            const string methodName = $"{nameof(Texture2DJsonConverter)}.{nameof(ConvertFromStringToTexture)}";
+#endif
+            if (!GetCurrentObjectSize(out var size))
+            {
+#if DEBUG
+                Debug.WriteLine($"{methodName}: unable to obtain current object size. The generated color or default" +
+                                $" texture will have a dimension of 1x1.");
+#endif
+            }
+            
             //First, try to parse a color value. If there is no color value, then get a Texture2D by name via the global
             //content manager
             
@@ -82,7 +94,7 @@ namespace AppleSerialization.Converters
                 Color paramColor = textureColor.Value;
 
                 //TextureFromColor is not case-sensitive, so we don't need to do anything extra to the string value
-                return TextureHelper.CreateTextureFromColor(GraphicsDevice, paramColor, width, height);
+                return TextureHelper.CreateTextureFromColor(GraphicsDevice, paramColor, size.Width, size.Height);
             }
 
             //the string value is not a color, so intercept it as a name to a Texture2D existing within the content
@@ -105,17 +117,22 @@ namespace AppleSerialization.Converters
             Debug.WriteLine($"{methodName}: cannot find texture from path. Returning default texture. Requested" +
                             $" path: {textureAbsolutePath}");
 #endif
-            return TextureHelper.GenerateDefaultTexture(GraphicsDevice, width, height);
+            return TextureHelper.GenerateDefaultTexture(GraphicsDevice, size.Width, size.Height);
         }
 
-        /// <summary>
-        /// Due to limitations and other roadblocks (such as the difficultly of expressing Texture data compactly in
-        /// Json format) and the fact that this method will not be used often since most Json will be written by hand,
-        /// this method is not implemented and will throw a NotImplementedException exception
-        /// </summary>
-        public override void Write(Utf8JsonWriter writer, Texture2D value, JsonSerializerOptions options)
+        public object ConvertFromString(string textureRelativePath) => ConvertFromStringToTexture(textureRelativePath);
+
+        private bool GetCurrentObjectSize(out (int Width, int Height) size)
         {
-            throw new NotImplementedException();
+            Vector2? currentObjSize = SerializationSettings.CurrentDeserializingObjectSize;
+            size = SerializationSettings.CurrentDeserializingObjectSizeType switch
+            {
+                "Ratio" or "ratio" => ((int) ((currentObjSize?.X ?? 1) * GraphicsDevice.Viewport.Width),
+                    (int) ((currentObjSize?.Y ?? 1) * GraphicsDevice.Viewport.Width)),
+                _ => ((int) (currentObjSize?.X ?? 1), (int) (currentObjSize?.Y ?? 1))
+            };
+
+            return currentObjSize is not null;
         }
 
         public void Dispose()

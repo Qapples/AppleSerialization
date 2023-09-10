@@ -12,7 +12,7 @@ namespace AppleSerialization.Converters
     /// <summary>
     /// Converts the name of a font system to a <see cref="FontSystem"/> instance when deserializing a json file.
     /// </summary>
-    public class FontSystemJsonConverter : JsonConverter<FontSystem>, IDisposable
+    public class FontSystemJsonConverter : JsonConverter<FontSystem>, IFromStringConverter, IDisposable
     {
         public SerializationSettings SerializationSettings { get; init; }
         public FontSystem DefaultFontSystem { get; init; }
@@ -48,11 +48,29 @@ namespace AppleSerialization.Converters
             if (fontSystemRelativePath is null)
             {
 #if DEBUG
-                Debug.WriteLine($"{methodName}: cannot get string value during reading Returning DefaultFontSystem");
+                Debug.WriteLine($"{methodName}: cannot get string value during reading. Returning " +
+                                $"DefaultFontSystem");
 #endif
                 return DefaultFontSystem;
             }
 
+            return ConvertFromStringToFontSystem(fontSystemRelativePath);
+        }
+
+        /// <summary>
+        /// SpriteFonts are not intended to be written as, therefore, this method will always return a
+        /// NotImplementedException
+        /// </summary>
+        public override void Write(Utf8JsonWriter writer, FontSystem value, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        private FontSystem ConvertFromStringToFontSystem(string fontSystemRelativePath)
+        {
+#if DEBUG
+            const string methodName = $"{nameof(FontSystemJsonConverter)}.{nameof(ConvertFromStringToFontSystem)}";
+#endif
             string fontSystemAbsolutePath =
                 Path.Combine(SerializationSettings.ContentDirectory, fontSystemRelativePath);
 
@@ -90,14 +108,8 @@ namespace AppleSerialization.Converters
             return fontSystem;
         }
 
-        /// <summary>
-        /// SpriteFonts are not intended to be written as, therefore, this method will always return a
-        /// NotImplementedException
-        /// </summary>
-        public override void Write(Utf8JsonWriter writer, FontSystem value, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
+        public object ConvertFromString(string fontSystemRelativePath) =>
+            ConvertFromStringToFontSystem(fontSystemRelativePath);
 
         public void Dispose()
         {
@@ -105,7 +117,7 @@ namespace AppleSerialization.Converters
             {
                 fontSystem.Dispose();
             }
-            
+
             _fontSystemsCache.Clear();
         }
     }

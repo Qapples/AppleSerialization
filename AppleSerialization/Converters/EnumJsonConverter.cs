@@ -35,9 +35,6 @@ namespace AppleSerialization.Converters
 
         public override void Write(Utf8JsonWriter writer, Enum value, JsonSerializerOptions options)
         {
-#if DEBUG
-            const string methodName = $"{nameof(EnumJsonConverter)}.{nameof(Write)}";
-#endif
             string enumString = value.ToString();
             writer.WriteStringValue(enumString);
         }
