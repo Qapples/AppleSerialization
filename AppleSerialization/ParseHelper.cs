@@ -106,5 +106,18 @@ namespace AppleSerialization
             value = new Vector4(values[0], values[1], values[2], values[3]);
             return true;
         }
+
+        public static bool TryParseColor(string s, out Color color)
+        {
+            if (!TryParseVector4(s, out Vector4 colorVec4) || byte.MaxValue < colorVec4.X ||
+                byte.MaxValue < colorVec4.Y || byte.MaxValue < colorVec4.Z || byte.MaxValue < colorVec4.W)
+            {
+                color = Color.Transparent;
+                return false;
+            }
+
+            color = new Color((byte) colorVec4.X, (byte) colorVec4.Y, (byte) colorVec4.Z, (byte) colorVec4.W);
+            return true;
+        }
     }
 }

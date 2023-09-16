@@ -30,14 +30,14 @@ namespace AppleSerialization.Converters
         
         /// <summary>
         /// Given the relative path (relative to <see cref="SerializationSettings.ContentDirectory"/>) of a texture,
-        /// or a <see cref="Color"/> in the format of "Color.{Color Name}", returns a <see cref="Texture2D"/> object
-        /// from a string value in json files.
+        /// or a <see cref="Color"/> in the format of "Color.{Color Name}", or a Color in the format of {R} {G} {B} {A}
+        /// values in the range [0, 255] returns a <see cref="Texture2D"/> object from a string value in json files.
         /// </summary>
         /// <param name="reader">JsonReader instance used to read data from the Json file</param>
         /// <param name="typeToConvert">The type that is being converted to (Texture2D)</param>
         /// <param name="options">The options of the JsonSerializer used</param>
         /// <returns>The Texture2D found by a relative path or the name of a <see cref="Color"/>. If the string value from
-        /// the Json object begins with "Color.", then a width * height box which is homogenous of the color specified
+        /// the Json object describes a color, then a width * height box which is homogenous of the color specified
         /// is returned as a Texture. If no Texture2D is found, then a black and pink checkerboard texture is used in
         /// place. If there is no size or scale property found within the Json object, a default size of 100x100 is used.
         /// (Bounds property is prioritized if both size and scale property exists)</returns>
@@ -46,10 +46,12 @@ namespace AppleSerialization.Converters
 #if DEBUG
             const string methodName = $"{nameof(Texture2DJsonConverter)}.{nameof(Read)}";
 #endif
-            string? textureRelativePath = reader.GetString();
+            //textureString can represent three things: a relative path to a texture, a Color value in the form of
+            //Color.{Color Name}, or a Color value in the form of {R} {G} {B} {A}
+            string? textureString = reader.GetString();
             GetCurrentObjectSize(out var size);
             
-            if (textureRelativePath is null)
+            if (textureString is null)
             {
 #if DEBUG
                 Debug.WriteLine($"{methodName}: Unable to get the string value when getting Texture2D. Using " +
@@ -58,7 +60,7 @@ namespace AppleSerialization.Converters
                 return TextureHelper.GenerateDefaultTexture(GraphicsDevice, size.Width, size.Width);
             }
 
-            return ConvertFromStringToTexture(textureRelativePath);
+            return ConvertFromStringToTexture(textureString);
         }
 
         /// <summary>
@@ -71,7 +73,7 @@ namespace AppleSerialization.Converters
             throw new NotImplementedException();
         }
         
-        public Texture2D ConvertFromStringToTexture(string textureRelativePath)
+        public Texture2D ConvertFromStringToTexture(string textureString)
         {
 #if DEBUG
             const string methodName = $"{nameof(Texture2DJsonConverter)}.{nameof(ConvertFromStringToTexture)}";
@@ -87,28 +89,30 @@ namespace AppleSerialization.Converters
             //First, try to parse a color value. If there is no color value, then get a Texture2D by name via the global
             //content manager
             
-            Color? textureColor = TextureHelper.GetColorFromName(textureRelativePath);
+            Color? colorFromName = TextureHelper.GetColorFromName(textureString);
 
-            if (textureColor is not null)
+            if (colorFromName is not null)
             {
-                Color paramColor = textureColor.Value;
-
-                //TextureFromColor is not case-sensitive, so we don't need to do anything extra to the string value
-                return TextureHelper.CreateTextureFromColor(GraphicsDevice, paramColor, size.Width, size.Height);
+                return TextureHelper.CreateTextureFromColor(GraphicsDevice, colorFromName.Value, size.Width, size.Height);
             }
 
-            //the string value is not a color, so intercept it as a name to a Texture2D existing within the content
+            if (ParseHelper.TryParseColor(textureString, out Color parsedColor))
+            {
+                return TextureHelper.CreateTextureFromColor(GraphicsDevice, parsedColor, size.Width, size.Height);
+            }
+            
+            //the string value is not a color, so interpret it as a name to a Texture2D existing within the content
             //manager
-            if (_textureCache.TryGetValue(textureRelativePath, out Texture2D? cachedTexture))
+            if (_textureCache.TryGetValue(textureString, out Texture2D? cachedTexture))
             {
                 return cachedTexture;
             }
 
-            string textureAbsolutePath = Path.Combine(SerializationSettings.ContentDirectory, textureRelativePath);
+            string textureAbsolutePath = Path.Combine(SerializationSettings.ContentDirectory, textureString);
             if (File.Exists(textureAbsolutePath))
             {
                 Texture2D texture = Texture2D.FromFile(GraphicsDevice, textureAbsolutePath);
-                _textureCache[textureRelativePath] = texture;
+                _textureCache[textureString] = texture;
 
                 return texture;
             }
@@ -120,7 +124,7 @@ namespace AppleSerialization.Converters
             return TextureHelper.GenerateDefaultTexture(GraphicsDevice, size.Width, size.Height);
         }
 
-        public object ConvertFromString(string textureRelativePath) => ConvertFromStringToTexture(textureRelativePath);
+        public object ConvertFromString(string textureString) => ConvertFromStringToTexture(textureString);
 
         private bool GetCurrentObjectSize(out (int Width, int Height) size)
         {

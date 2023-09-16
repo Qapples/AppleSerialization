@@ -47,27 +47,22 @@ namespace AppleSerialization.Converters
         public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options) =>
             writer.WriteStringValue($"{value.R} {value.G} {value.B} {value.A}");
 
-        private Color ConvertFromStringToColor(string colorStr)
+        private static Color ConvertFromStringToColor(string colorStr)
         {
 #if DEBUG
             const string methodName = $"{nameof(ColorJsonConverter)}.{nameof(ConvertFromStringToColor)}";
 #endif
             Color? color = TextureHelper.GetColorFromName(colorStr);
-            if (color is null)
+            if (color is not null) return color.Value;
+            
+            if (!ParseHelper.TryParseColor(colorStr, out Color parsedColor))
             {
-                if (!ParseHelper.TryParseVector4(colorStr, out Vector4 colorVec4) || byte.MaxValue < colorVec4.X ||
-                    byte.MaxValue < colorVec4.Y || byte.MaxValue < colorVec4.Z || byte.MaxValue < colorVec4.W)
-                {
-                    Debug.WriteLine($"{methodName} :Unable to parse color string value ({colorStr}). Either the " +
-                                    $"string is in an improper format or one of the values is outside the accepted " +
-                                    $"range [0, 255]. Using default Color.Transparent value.");
-                    return Color.Transparent;
-                }
-
-                color = new Color((byte) colorVec4.X, (byte) colorVec4.Y, (byte) colorVec4.Z, (byte) colorVec4.W);
+                Debug.WriteLine($"{methodName} :Unable to parse color string value ({colorStr}). Either the " +
+                                $"string is in an improper format or one of the values is outside the accepted " +
+                                $"range [0, 255]. Using default Color.Transparent value.");
             }
 
-            return color.Value;
+            return parsedColor;
         }
 
         public object ConvertFromString(string colorStr) => ConvertFromStringToColor(colorStr);
