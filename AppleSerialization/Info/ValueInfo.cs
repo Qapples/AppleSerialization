@@ -39,16 +39,29 @@ namespace AppleSerialization.Info
                 return true;
             }
             
-            MethodInfo? tryParse = valueType.GetMethod("TryParse", BindingFlags.Static | BindingFlags.Public,
-                new[] { typeof(string), valueType.MakeByRefType() });
+            MethodInfo? tryParse;
+            object?[] args;
             
+            if (valueType.BaseType == typeof(Enum))
+            {
+                tryParse = typeof(Enum).GetMethod("TryParse", BindingFlags.Static | BindingFlags.Public,
+                    new[] { typeof(Type), typeof(string), typeof(object).MakeByRefType() });
+                args = new object?[] { valueType, Value, null };
+            }
+            else
+            {
+                tryParse = valueType.GetMethod("TryParse", BindingFlags.Static | BindingFlags.Public,
+                        new[] { typeof(string), valueType.MakeByRefType() });
+                args = new object?[] { Value, null };
+            }
+
             if (tryParse is null) return false;
     
-            object?[] args = { Value, null };
             bool success = (bool?) tryParse.Invoke(null, args) ?? false;
             if (success)
             {
-                valueObj = args[1];
+                // last index of a TryParse method is always the output parameter.
+                valueObj = args[^1];
                 return true;
             }
     
