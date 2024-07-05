@@ -9,12 +9,12 @@ namespace AppleSerialization.Info
     public class EntityInfo
     {
         /// <summary>
-        /// The ID of an <see cref="Entity"/> when it's created through <see cref="CreateEntity"/>.
+        /// The ID of an <see cref="Entity"/> when it's created through <see cref="World.CreateEntity"/>.
         /// </summary>
         public string Id { get; set; }
         
         /// <summary>
-        /// The components of an <see cref="Entity"/> when it's created through <see cref="CreateEntity"/>.
+        /// The components of an <see cref="Entity"/> when it's created through <see cref="World.CreateEntity"/>.
         /// </summary>
         public object[] Components { get; set; }
         
