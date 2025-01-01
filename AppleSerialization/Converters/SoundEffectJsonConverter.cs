@@ -16,7 +16,7 @@ namespace AppleSerialization.Converters
 
         private SerializationSettings _serializationSettings;
 
-        private static readonly SoundEffect BlankSoundEffect = new(Array.Empty<byte>(), 0, AudioChannels.Stereo);
+        private static readonly SoundEffect BlankSoundEffect = new(new byte[2], 8000, AudioChannels.Mono);
         
         public SoundEffectJsonConverter(SerializationSettings settings)
         {
