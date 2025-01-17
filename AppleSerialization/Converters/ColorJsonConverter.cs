@@ -24,9 +24,8 @@ namespace AppleSerialization.Converters
         /// <returns>The appropriate Color value based on the name given</returns>
         public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-#if DEBUG
             const string methodName = $"{nameof(ColorJsonConverter)}.{nameof(Read)}";
-#endif
+
             string? colorStr = reader.GetString();
             if (colorStr is null)
             {
@@ -49,9 +48,8 @@ namespace AppleSerialization.Converters
 
         private static Color ConvertFromStringToColor(string colorStr)
         {
-#if DEBUG
             const string methodName = $"{nameof(ColorJsonConverter)}.{nameof(ConvertFromStringToColor)}";
-#endif
+
             Color? color = TextureHelper.GetColorFromName(colorStr);
             if (color is not null) return color.Value;
             

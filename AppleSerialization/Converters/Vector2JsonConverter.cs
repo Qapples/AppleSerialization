@@ -24,9 +24,8 @@ namespace AppleSerialization.Converters
         /// parse</returns>
         public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-#if DEBUG
             const string methodName = $"{nameof(Vector2JsonConverter)}.{nameof(Read)}";
-#endif
+
             string? vectorStr = reader.GetString();
             if (vectorStr is null)
             {
