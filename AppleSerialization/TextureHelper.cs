@@ -13,16 +13,12 @@ namespace AppleSerialization
         /// </summary>
         /// <param name="graphicsDevice">GraphicsDevice object used to create the Texture2D instance</param>
         /// <param name="color">Color of the texture</param>
-        /// <param name="width">Width of the texture</param>
-        /// <param name="height">Height of the texture</param>
         /// <returns>A Texture2D object of width x height dimensions that is a rectangle of a homogenous color</returns>
-        public static Texture2D CreateTextureFromColor(GraphicsDevice graphicsDevice, Color color, int width, int height)
+        public static Texture2D CreateTextureFromColor(GraphicsDevice graphicsDevice, Color color)
         {
-            Texture2D outTexture = new(graphicsDevice, width, height);
-             
-            Color[] colorArr = new Color[width * height];
-            for (int i = 0; i < width * height; i++) colorArr[i] = color;
-            
+            Texture2D outTexture = new(graphicsDevice, 1, 1);
+
+            Color[] colorArr = { color };
             outTexture.SetData(colorArr);
 
             return outTexture;
@@ -39,18 +35,17 @@ namespace AppleSerialization
         /// <param name="height">Height of the texture</param>
         /// <returns>A Texture2D object of width x height dimensions that is a rectangle of a homogenous color. If the
         /// color is not found, a transparent texture is returned</returns>
-        public static Texture2D CreateTextureFromNameOfColor(GraphicsDevice graphicsDevice, string nameOfColor,
-            int width, int height)
+        public static Texture2D CreateTextureFromNameOfColor(GraphicsDevice graphicsDevice, string nameOfColor)
         {
             Color? color = GetColorFromName(nameOfColor);
             if (color is null)
             {
                 Debug.WriteLine($"Color of name {nameOfColor} cannot be found in the Color struct. By default, " +
                                 $" the color of the texture will be entirely transparent");
-                return CreateTextureFromColor(graphicsDevice, Color.Transparent, width, height);
+                return CreateTextureFromColor(graphicsDevice, Color.Transparent);
             }
 
-            return CreateTextureFromColor(graphicsDevice, color.Value, width, height);
+            return CreateTextureFromColor(graphicsDevice, color.Value);
         }
 
         /// <summary>
@@ -61,12 +56,10 @@ namespace AppleSerialization
         /// <param name="contentManager">ContentManager instance used to load texture if the name parameter represents
         /// the name of a texture</param>
         /// <param name="name">Name of the texture the load or the color to create a texture out of</param>
-        /// <param name="width">Width of the texture</param>
-        /// <param name="height">Height of the texture</param>
         /// <returns>A texture that is loaded from the name. If it is the name of the color, a width x height (both are
         /// 1 unless specified otherwise) homogenous texture of that color is returned</returns>
         public static Texture2D GetTextureFromNameOrColor(GraphicsDevice graphicsDevice, ContentManager contentManager,
-            string name, int width = 1, int height = 1)
+            string name)
         {
             try
             {
@@ -78,12 +71,12 @@ namespace AppleSerialization
 
                 if (textureColor is not null)
                 {
-                    return CreateTextureFromNameOfColor(graphicsDevice, name, width, height);
+                    return CreateTextureFromNameOfColor(graphicsDevice, name);
                 }
                 
                 Debug.WriteLine($"Texture of name or color {name} cannot be found. Returning default texture");
 
-                return GenerateDefaultTexture(graphicsDevice, width, height);
+                return GenerateDefaultTexture(graphicsDevice, 2, 2);
             }
         }
 

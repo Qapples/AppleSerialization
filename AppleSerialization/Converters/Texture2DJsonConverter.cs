@@ -57,7 +57,7 @@ namespace AppleSerialization.Converters
                 Debug.WriteLine($"{methodName}: Unable to get the string value when getting Texture2D. Using " +
                                 $"default texture.");
 #endif
-                return TextureHelper.GenerateDefaultTexture(GraphicsDevice, size.Width, size.Width);
+                return TextureHelper.GenerateDefaultTexture(GraphicsDevice, 2, 2);
             }
 
             return ConvertFromStringToTexture(textureString);
@@ -93,12 +93,12 @@ namespace AppleSerialization.Converters
 
             if (colorFromName is not null)
             {
-                return TextureHelper.CreateTextureFromColor(GraphicsDevice, colorFromName.Value, size.Width, size.Height);
+                return TextureHelper.CreateTextureFromColor(GraphicsDevice, colorFromName.Value);
             }
 
             if (ParseHelper.TryParseColor(textureString, out Color parsedColor))
             {
-                return TextureHelper.CreateTextureFromColor(GraphicsDevice, parsedColor, size.Width, size.Height);
+                return TextureHelper.CreateTextureFromColor(GraphicsDevice, parsedColor);
             }
             
             //the string value is not a color, so interpret it as a name to a Texture2D existing within the content
