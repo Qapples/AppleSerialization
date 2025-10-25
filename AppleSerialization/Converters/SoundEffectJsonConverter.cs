@@ -63,7 +63,7 @@ namespace AppleSerialization.Converters
             }
 
             using FileStream soundEffectStream = new(soundEffectAbsolutePath, FileMode.Open, FileAccess.Read);
-           
+
             return _soundEffectCache[soundEffectRelativePath] =
                 EffectLoader.GetEffect(soundEffectStream, AudioType.OGG);
         }
